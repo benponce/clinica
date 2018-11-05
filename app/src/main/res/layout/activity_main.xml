@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/txtBanner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="11dp"
+        android:text="Bienvenido"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <ImageView
+        android:id="@+id/ibnLogout"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="38dp"
+        android:layout_marginEnd="50dp"
+        app:srcCompat="@drawable/ic_action_logout" />
+
+    <ImageView
+        android:id="@+id/ibnHeartRate"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/ibnLogout"
+        android:layout_marginBottom="167dp"
+        app:srcCompat="@drawable/ic_action_heart_rate" />
+
+    <ImageView
+        android:id="@+id/ibnConfig"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/ibnLogout"
+        android:layout_marginStart="65dp"
+        app:srcCompat="@drawable/ic_action_config" />
+
+    <ImageView
+        android:id="@+id/ibnStep"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignStart="@+id/ibnConfig"
+        android:layout_alignTop="@+id/ibnHeartRate"
+        app:srcCompat="@drawable/ic_action_step" />
+
+    <TextView
+        android:id="@+id/lblSteps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/lblConfig"
+        android:layout_below="@+id/ibnHeartRate"
+        android:layout_marginTop="-171dp"
+        android:text="Contador de Pasos" />
+    <TextView
+        android:id="@+id/lblHeartRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/ibnLogout"
+        android:layout_below="@+id/ibnHeartRate"
+        android:layout_marginTop="-171dp"
+        android:text="Ritmo Cardiaco" />
+
+    <TextView
+        android:id="@+id/lblConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/ibnLogout"
+        android:layout_marginStart="51dp"
+        android:layout_marginTop="-38dp"
+        android:text="Configurar Cuenta" />
+
+    <TextView
+        android:id="@+id/lblLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ibnLogout"
+        android:layout_below="@+id/ibnLogout"
+        android:layout_marginTop="-38dp"
+        android:text="Cerrar Sesión" />
+
+</RelativeLayout>
