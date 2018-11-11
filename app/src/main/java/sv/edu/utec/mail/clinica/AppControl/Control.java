@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
-
-import static android.support.v4.content.ContextCompat.startActivity;
+import sv.edu.utec.mail.clinica.PerfilActivity;
+import sv.edu.utec.mail.clinica.StepsActivity;
 
 public class Control {
     public static void RedirectMain(Context context){
@@ -24,4 +24,15 @@ public class Control {
         //Redireccionar a Login
         context.startActivity(new Intent(context, LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).addCategory(Intent.CATEGORY_HOME));
     }
+
+    public static void Pasos(Context context) {
+        //Abrir StepsActivity
+        context.startActivity(new Intent(context, StepsActivity.class));
+    }
+
+    public static void Perfil(Context context) {
+        //Abrir PerfilActivity
+        context.startActivity(new Intent(context, PerfilActivity.class));
+    }
+
 }

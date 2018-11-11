@@ -33,9 +33,9 @@
         android:id="@+id/ibnHeartRate"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/ibnLogout"
-        android:layout_marginBottom="167dp"
+        android:layout_marginTop="162dp"
         app:srcCompat="@drawable/ic_action_heart_rate" />
 
     <ImageView
@@ -44,7 +44,7 @@
         android:layout_height="80dp"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/ibnLogout"
-        android:layout_marginStart="65dp"
+        android:layout_marginStart="49dp"
         app:srcCompat="@drawable/ic_action_config" />
 
     <ImageView
@@ -55,22 +55,34 @@
         android:layout_alignTop="@+id/ibnHeartRate"
         app:srcCompat="@drawable/ic_action_step" />
 
+    <ImageView
+        android:id="@+id/ibnCitas"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="188dp"
+        app:srcCompat="@drawable/ic_action_citas" />
+
     <TextView
         android:id="@+id/lblSteps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/lblConfig"
-        android:layout_below="@+id/ibnHeartRate"
-        android:layout_marginTop="-171dp"
-        android:text="Contador de Pasos" />
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/txtBanner"
+        android:layout_marginTop="252dp"
+        android:text="Contador de Pasos"
+        android:textColor="@android:color/white" />
+
     <TextView
         android:id="@+id/lblHeartRate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@+id/ibnLogout"
-        android:layout_below="@+id/ibnHeartRate"
-        android:layout_marginTop="-171dp"
-        android:text="Ritmo Cardiaco" />
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="262dp"
+        android:text="Ritmo Cardiaco"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/lblConfig"
@@ -78,9 +90,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/ibnLogout"
-        android:layout_marginStart="51dp"
+        android:layout_marginStart="77dp"
         android:layout_marginTop="-38dp"
-        android:text="Configurar Cuenta" />
+        android:text="Perfil"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/lblLogout"
@@ -89,6 +102,17 @@
         android:layout_alignStart="@+id/ibnLogout"
         android:layout_below="@+id/ibnLogout"
         android:layout_marginTop="-38dp"
-        android:text="Cerrar Sesión" />
+        android:text="Cerrar Sesión"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/lblCitas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ibnCitas"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-188dp"
+        android:text="Citas"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>

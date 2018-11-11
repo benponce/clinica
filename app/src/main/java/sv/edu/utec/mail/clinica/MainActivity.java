@@ -1,10 +1,9 @@
 package sv.edu.utec.mail.clinica;
 
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,7 +17,9 @@ public class MainActivity extends AppCompatActivity {
     TextView mBanner;
     ImageView mLogout;
     ImageView mHeartRate;
-    Usuario usr;
+    public Usuario usr;
+    ImageView mSteps;
+    ImageView mConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +30,24 @@ public class MainActivity extends AppCompatActivity {
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                salir();
+                Control.Salir(MainActivity.this);
             }
         });
         mHeartRate = findViewById(R.id.ibnHeartRate);
+        mSteps = findViewById(R.id.ibnStep);
+        mSteps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Control.Pasos(MainActivity.this);
+            }
+        });
+        mConfig = findViewById(R.id.ibnConfig);
+        mConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Control.Perfil(MainActivity.this);
+            }
+        });
 
         bienvenida();
     }
@@ -46,10 +61,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e){
             Toast.makeText(getApplicationContext(), "Error al leer preferencias de usuario", Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void salir(){
-        Control.Salir(this);
     }
 
     @Override

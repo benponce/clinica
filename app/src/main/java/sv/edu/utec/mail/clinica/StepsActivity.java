@@ -6,11 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
@@ -30,6 +31,7 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Value;
 import com.google.android.gms.fitness.request.BleScanCallback;
 import com.google.android.gms.fitness.request.DataSourcesRequest;
+import com.google.android.gms.fitness.request.OnDataPointListener;
 import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.request.StartBleScanRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
@@ -42,6 +44,10 @@ import sv.edu.utec.mail.clinica.Fitness.HistoryService;
 import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
 
 public class StepsActivity extends FitClient {
+
+    TextView mBanner;
+
+    private OnDataPointListener onDataPointListener;
 
     private static final int REQUEST_OAUTH = 1;
 
@@ -90,6 +96,8 @@ public class StepsActivity extends FitClient {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
 
+        mBanner = findViewById(R.id.txtPasos);
+
         hist = HistoryService.getInstance();
 
         hist.buildFitnessClientHistory(this);
@@ -106,15 +114,13 @@ public class StepsActivity extends FitClient {
         //Sensor Fitness Part
         DataSourcesRequest dataSourceRequest = new DataSourcesRequest.Builder()
                 .setDataTypes( DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                .setDataSourceTypes( DataSource.TYPE_RAW )
+                .setDataSourceTypes(DataSource.TYPE_DERIVED)
                 .build();
 
         ResultCallback<DataSourcesResult> dataSourcesResultCallback = new ResultCallback<DataSourcesResult>() {
             @Override
             public void onResult(DataSourcesResult dataSourcesResult) {
                 for( DataSource dataSource : dataSourcesResult.getDataSources() ) {
-                    //lab.addStepActivity("Data Source type: "+dataSource.getDataType().getName());
-                    //lab.addStepActivity("Stream Identifier: "+dataSource.getStreamIdentifier());
                     if( DataType.TYPE_STEP_COUNT_CUMULATIVE.equals( dataSource.getDataType() ) ) {
                         registerFitnessDataListener(dataSource, DataType.TYPE_STEP_COUNT_CUMULATIVE);
                     }
@@ -170,24 +176,13 @@ public class StepsActivity extends FitClient {
 
     @Override
     public void onDataPoint(DataPoint dataPoint) {
-        for( final Field field : dataPoint.getDataType().getFields() ) {
-            final Value value = dataPoint.getValue( field );
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //Toast.makeText(getApplicationContext(), "Field: " + field.getName() + " Value: " + value, Toast.LENGTH_SHORT).show();
-                    if (value.asInt()>nbStepSaveMidnight) {
-                        nbStepOfDay = value.asInt() - nbStepSaveMidnight;
-                    } else {
-                        resetStepSaveMidnight();
-                        nbStepOfDay = value.asInt();
-                    }
-                    ResetBroadcastReceiver r = ResetBroadcastReceiver.getInstance();
-                    r.saveStepSaveMidnight(getApplicationContext(),nbStepOfDay);
-                    //lab.addStepActivity("Field: " + field.getName() + " Value: " + nbStepOfDay);
-                }
-            });
-        }
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mApiClient.connect();
     }
 
     @Override
@@ -216,11 +211,11 @@ public class StepsActivity extends FitClient {
         mApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Fitness.BLE_API)
                 .addApi(Fitness.SENSORS_API)
+                .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
                 .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-        mApiClient.connect();
     }
 
     //Sensor de Fitness
@@ -231,7 +226,30 @@ public class StepsActivity extends FitClient {
                 .setSamplingRate( 3, TimeUnit.SECONDS )
                 .build();
 
-        Fitness.SensorsApi.add( mApiClient, request, this )
+        onDataPointListener = new OnDataPointListener() {
+            @Override
+            public void onDataPoint(DataPoint dataPoint) {
+                for (final Field field : dataPoint.getDataType().getFields()) {
+                    final Value value = dataPoint.getValue(field);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (value.asInt() > nbStepSaveMidnight) {
+                                nbStepOfDay = value.asInt() - nbStepSaveMidnight;
+                            } else {
+                                resetStepSaveMidnight();
+                                nbStepOfDay = value.asInt();
+                            }
+                            ResetBroadcastReceiver r = ResetBroadcastReceiver.getInstance();
+                            r.saveStepSaveMidnight(getApplicationContext(), nbStepOfDay);
+                            String msj = "Pasos de hoy: " + nbStepOfDay;
+                            mBanner.setText(msj);
+                        }
+                    });
+                }
+            }
+        };
+        Fitness.SensorsApi.add(mApiClient, request, onDataPointListener)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
