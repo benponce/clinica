@@ -15,9 +15,10 @@ import sv.edu.utec.mail.clinica.POJO.Usuario;
 
 public class MainActivity extends AppCompatActivity {
     TextView mBanner;
+    Usuario usr;
     ImageView mLogout;
     ImageView mHeartRate;
-    public Usuario usr;
+    ImageView mCitas;
     ImageView mSteps;
     ImageView mConfig;
 
@@ -34,6 +35,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mHeartRate = findViewById(R.id.ibnHeartRate);
+        mHeartRate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Control.HR(MainActivity.this);
+            }
+        });
+        mCitas = findViewById(R.id.ibnCitas);
+        mCitas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Control.Citas(MainActivity.this);
+            }
+        });
         mSteps = findViewById(R.id.ibnStep);
         mSteps.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -27,7 +27,9 @@
         <activity
             android:name=".PerfilActivity"
             android:label="@string/title_activity_perfil"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".CitasActivity" />
+        <activity android:name=".HRActivity"></activity>
     </application>
 
 </manifest>
