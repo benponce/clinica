@@ -2,6 +2,7 @@ package sv.edu.utec.mail.clinica.Red;
 
 
 import android.content.Context;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -16,6 +17,9 @@ public class ClienteRest {
         return "https://apex.oracle.com/pls/apex/utec1759102013/CR/login/";
     }
 
+    public static String getPasosUrl() {
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales_Pasos/";
+    }
     public static String getLecturasUrl(){
         return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales";
     }

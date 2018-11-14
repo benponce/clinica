@@ -79,6 +79,7 @@
         android:id="@+id/button"
         android:layout_width="250dp"
         android:layout_height="50dp"
+        android:background="@android:color/holo_blue_light"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="60dp"

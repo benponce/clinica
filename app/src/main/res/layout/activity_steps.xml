@@ -9,10 +9,10 @@
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graphSteps"
         android:layout_width="match_parent"
-        android:layout_height="200dip"
+        android:layout_height="308dp"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="165dp" />
+        android:layout_marginBottom="128dp" />
 
     <TextView
         android:id="@+id/txtPasos"
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="136dp"
+        android:layout_marginBottom="52dp"
         android:text="Pasos de hoy:"
         android:textColor="@android:color/white"
         android:textSize="24sp"

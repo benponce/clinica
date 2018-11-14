@@ -12,7 +12,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,6 +40,10 @@ import com.google.android.gms.fitness.request.OnDataPointListener;
 import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.request.StartBleScanRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
+import com.google.gson.Gson;
+import com.jjoe64.graphview.GraphView;
+
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -42,10 +51,14 @@ import java.util.concurrent.TimeUnit;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
 import sv.edu.utec.mail.clinica.Fitness.HistoryService;
 import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
+import sv.edu.utec.mail.clinica.POJO.Lectura;
+import sv.edu.utec.mail.clinica.Red.ClienteRest;
+import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
 public class StepsActivity extends FitClient {
 
     TextView mBanner;
+    GraphView graph;
 
     private OnDataPointListener onDataPointListener;
 
@@ -97,6 +110,7 @@ public class StepsActivity extends FitClient {
         }
 
         mBanner = findViewById(R.id.txtPasos);
+        graph = findViewById(R.id.graphSteps);
 
         hist = HistoryService.getInstance();
 
@@ -107,6 +121,7 @@ public class StepsActivity extends FitClient {
         readStepSaveMidnight();
 
         resetCounter(this);
+        graficar();
     }
 
     @Override
@@ -319,6 +334,35 @@ public class StepsActivity extends FitClient {
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, new Intent(context, ResetBroadcastReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000*60*60*24, pi);
+    }
+
+    private void graficar() {
+
+        String url = ClienteRest.getPasosUrl() + '6';
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Gson gson = new Gson();
+
+                            Lectura[] lecturas = gson.fromJson(response.getJSONArray("items").toString(), Lectura[].class);
+                            graph.addSeries(Graficador.llenarSerie(lecturas));
+                        } catch (Exception e) {
+                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(), "No tiene registro de pasos ", Toast.LENGTH_LONG).show();
+                    }
+                });
+        ClienteRest.getInstance(this).addToRequestQueue(jsonObjectRequest);
+
     }
 
 }
