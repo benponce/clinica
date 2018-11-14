@@ -52,6 +52,7 @@ import sv.edu.utec.mail.clinica.Fitness.FitClient;
 import sv.edu.utec.mail.clinica.Fitness.HistoryService;
 import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
 import sv.edu.utec.mail.clinica.POJO.Lectura;
+import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
@@ -59,6 +60,7 @@ public class StepsActivity extends FitClient {
 
     TextView mBanner;
     GraphView graph;
+    Usuario usr;
 
     private OnDataPointListener onDataPointListener;
 
@@ -111,6 +113,20 @@ public class StepsActivity extends FitClient {
 
         mBanner = findViewById(R.id.txtPasos);
         graph = findViewById(R.id.graphSteps);
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(7);
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(10000);
+
+        try {
+            Gson gson = new Gson();
+            SharedPreferences settings = getSharedPreferences("clinica", 0);
+            usr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Error al leer preferencias de usuario", Toast.LENGTH_SHORT).show();
+        }
 
         hist = HistoryService.getInstance();
 
@@ -338,7 +354,7 @@ public class StepsActivity extends FitClient {
 
     private void graficar() {
 
-        String url = ClienteRest.getPasosUrl() + '6';
+        String url = ClienteRest.getPasosUrl() + usr.paciente;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -349,7 +365,7 @@ public class StepsActivity extends FitClient {
                             Gson gson = new Gson();
 
                             Lectura[] lecturas = gson.fromJson(response.getJSONArray("items").toString(), Lectura[].class);
-                            graph.addSeries(Graficador.llenarSerie(lecturas));
+                            graph.addSeries(Graficador.llenarSerie(lecturas, StepsActivity.this));
                         } catch (Exception e) {
                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                         }

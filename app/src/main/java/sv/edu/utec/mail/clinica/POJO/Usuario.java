@@ -21,9 +21,6 @@ public class Usuario {
     @SerializedName("email")
     public String email;
 
-    @SerializedName("status_id")
-    public int status;
-
-    @SerializedName("rol")
-    public String rol;
+    @SerializedName("codigo_pac")
+    public int paciente;
 }

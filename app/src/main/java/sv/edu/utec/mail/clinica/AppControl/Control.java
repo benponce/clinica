@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import sv.edu.utec.mail.clinica.CitasActivity;
 import sv.edu.utec.mail.clinica.HRActivity;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;

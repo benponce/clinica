@@ -16,13 +16,29 @@ public class ClienteRest {
     public static String getLoginUrl(){
         return "https://apex.oracle.com/pls/apex/utec1759102013/CR/login/";
     }
-
     public static String getPasosUrl() {
         return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales_Pasos/";
     }
     public static String getLecturasUrl(){
-        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales";
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales/";
     }
+
+    public static String getCambioPwd() {
+        //pass+id
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/cambiopass/";
+    }
+
+    public static String getCitasUrl() {
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Citas/";
+    }
+
+    public static String getRegistroVitalesUrl() {
+        /*
+         * unidad, valor, Codigo_vitales, codigo_pac
+         */
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Citas/";
+    }
+
     public static synchronized ClienteRest getInstance(Context context) {
         if (mInstance == null) {
             mInstance = new ClienteRest(context);
