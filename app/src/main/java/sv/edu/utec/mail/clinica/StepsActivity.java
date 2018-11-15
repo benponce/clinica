@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -115,10 +116,13 @@ public class StepsActivity extends FitClient {
         graph = findViewById(R.id.graphSteps);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(7);
+        graph.getViewport().setMaxX(10);
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(10000);
+        graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
+        graph.addSeries(Graficador.lineaMeta());
+
 
         try {
             Gson gson = new Gson();

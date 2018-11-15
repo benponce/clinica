@@ -1,6 +1,7 @@
 package sv.edu.utec.mail.clinica.Utilidades;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.series.DataPoint;
@@ -18,9 +19,8 @@ public class Graficador {
 
     public static LineGraphSeries<DataPoint> llenarSerie(Lectura[] lecturas, final Context context) {
 
-        DataPoint[] dataPoints = new DataPoint[lecturas.length + 1];
+        DataPoint[] dataPoints = new DataPoint[lecturas.length];
         int i = 1;
-        dataPoints[0] = new DataPoint(0, 0);
         for (Lectura lectura : lecturas) {
             dataPoints[i] = new DataPoint(i, lectura.valor);
             i++;
@@ -28,6 +28,7 @@ public class Graficador {
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         series.setDrawDataPoints(true);
         series.setDataPointsRadius(10);
+        series.setColor(Color.CYAN);
         series.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
@@ -36,6 +37,15 @@ public class Graficador {
 
             }
         });
+        return series;
+    }
+
+    public static LineGraphSeries<DataPoint> lineaMeta() {
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[]{
+                new DataPoint(0, 5000),
+                new DataPoint(10, 5000)
+        });
+        series.setColor(Color.RED);
         return series;
     }
 }
