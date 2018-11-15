@@ -11,14 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
-
-import org.json.JSONObject;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.POJO.Usuario;
@@ -67,23 +64,19 @@ public class PwdFragment extends Fragment {
             } else {
                 if (strNueva.equals(strConfirm)) {
                     String url = ClienteRest.getCambioPwd() + strNueva + '/' + usr.id;
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                            (Request.Method.PUT, url, null, new Response.Listener<JSONObject>() {
+                    StringRequest stringRequest = new StringRequest
+                            (Request.Method.PUT, url, new Response.Listener<String>() {
                                 @Override
-                                public void onResponse(JSONObject response) {
+                                public void onResponse(String response) {
                                     cambioExitoso();
                                 }
                             }, new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
-                                    if (error instanceof ParseError) {
-                                        cambioExitoso();
-                                    } else {
-                                        Toast.makeText(getActivity(), "Operación rechazada por el servidor", Toast.LENGTH_LONG).show();
-                                    }
+                                    Toast.makeText(getActivity(), "Operación rechazada por el servidor", Toast.LENGTH_LONG).show();
                                 }
                             });
-                    ClienteRest.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+                    ClienteRest.getInstance(getActivity()).addToRequestQueue(stringRequest);
                 } else {
                     Toast.makeText(getActivity(), "La nueva contraseña no concide con la confirmación.", Toast.LENGTH_LONG).show();
                 }

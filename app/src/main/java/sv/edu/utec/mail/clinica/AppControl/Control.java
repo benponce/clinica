@@ -3,11 +3,15 @@ package sv.edu.utec.mail.clinica.AppControl;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import sv.edu.utec.mail.clinica.CitasActivity;
 import sv.edu.utec.mail.clinica.HRActivity;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
+import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.PerfilActivity;
 import sv.edu.utec.mail.clinica.StepsActivity;
 
@@ -45,6 +49,17 @@ public class Control {
     public static void HR(Context context) {
         //Abrir PerfilActivity
         context.startActivity(new Intent(context, HRActivity.class));
+    }
+
+    public static Usuario getUsuario(Context context) {
+        try {
+            Gson gson = new Gson();
+            SharedPreferences settings = context.getSharedPreferences("clinica", 0);
+            return gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
+        } catch (Exception e) {
+            Toast.makeText(context, "Error al leer preferencias de usuario", Toast.LENGTH_SHORT).show();
+            return null;
+        }
     }
 
 }

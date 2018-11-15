@@ -12,6 +12,8 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +21,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -47,8 +50,11 @@ import com.jjoe64.graphview.GraphView;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
 import sv.edu.utec.mail.clinica.Fitness.HistoryService;
 import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
@@ -62,6 +68,7 @@ public class StepsActivity extends FitClient {
     TextView mBanner;
     GraphView graph;
     Usuario usr;
+    Button mTmpGuardar;
 
     private OnDataPointListener onDataPointListener;
 
@@ -122,15 +129,18 @@ public class StepsActivity extends FitClient {
         graph.getViewport().setMaxY(10000);
         graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
         graph.addSeries(Graficador.lineaMeta());
+        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
+        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
 
+        mTmpGuardar = findViewById(R.id.tmpGuardar);
+        mTmpGuardar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                guardarPasos();
+            }
+        });
 
-        try {
-            Gson gson = new Gson();
-            SharedPreferences settings = getSharedPreferences("clinica", 0);
-            usr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "Error al leer preferencias de usuario", Toast.LENGTH_SHORT).show();
-        }
+        usr = Control.getUsuario(this);
 
         hist = HistoryService.getInstance();
 
@@ -148,15 +158,15 @@ public class StepsActivity extends FitClient {
     public void onConnected(@Nullable Bundle bundle) {
         //Sensor Fitness Part
         DataSourcesRequest dataSourceRequest = new DataSourcesRequest.Builder()
-                .setDataTypes( DataType.TYPE_STEP_COUNT_CUMULATIVE)
+                .setDataTypes(DataType.TYPE_STEP_COUNT_CUMULATIVE)
                 .setDataSourceTypes(DataSource.TYPE_DERIVED)
                 .build();
 
         ResultCallback<DataSourcesResult> dataSourcesResultCallback = new ResultCallback<DataSourcesResult>() {
             @Override
             public void onResult(DataSourcesResult dataSourcesResult) {
-                for( DataSource dataSource : dataSourcesResult.getDataSources() ) {
-                    if( DataType.TYPE_STEP_COUNT_CUMULATIVE.equals( dataSource.getDataType() ) ) {
+                for (DataSource dataSource : dataSourcesResult.getDataSources()) {
+                    if (DataType.TYPE_STEP_COUNT_CUMULATIVE.equals(dataSource.getDataType())) {
                         registerFitnessDataListener(dataSource, DataType.TYPE_STEP_COUNT_CUMULATIVE);
                     }
                 }
@@ -173,16 +183,16 @@ public class StepsActivity extends FitClient {
         switch (requestCode) {
             case REQUEST_BLUETOOTH:
                 startBleScan();
-                Log.e( "onActivityResult", "REQUEST_BLUETOOTH" );
+                Log.e("onActivityResult", "REQUEST_BLUETOOTH");
                 break;
             case REQUEST_OAUTH:
                 authInProgress = false;
-                if( resultCode == RESULT_OK ) {
-                    if( !mApiClient.isConnecting() && !mApiClient.isConnected() ) {
+                if (resultCode == RESULT_OK) {
+                    if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
                         mApiClient.connect();
                     }
-                } else if( resultCode == RESULT_CANCELED ) {
-                    Log.e( "onActivityResult", "RESULT_CANCELED" );
+                } else if (resultCode == RESULT_CANCELED) {
+                    Log.e("onActivityResult", "RESULT_CANCELED");
                 }
                 break;
             default:
@@ -197,15 +207,15 @@ public class StepsActivity extends FitClient {
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        if( !authInProgress ) {
+        if (!authInProgress) {
             try {
                 authInProgress = true;
-                connectionResult.startResolutionForResult( StepsActivity.this, REQUEST_OAUTH );
-            } catch(IntentSender.SendIntentException e ) {
+                connectionResult.startResolutionForResult(StepsActivity.this, REQUEST_OAUTH);
+            } catch (IntentSender.SendIntentException e) {
 
             }
         } else {
-            Log.e( "GoogleFit", "authInProgress" );
+            Log.e("GoogleFit", "authInProgress");
         }
     }
 
@@ -224,7 +234,7 @@ public class StepsActivity extends FitClient {
     protected void onStop() {
         super.onStop();
         //Sensor de Fitness
-        Fitness.SensorsApi.remove( mApiClient, this )
+        Fitness.SensorsApi.remove(mApiClient, this)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -256,9 +266,9 @@ public class StepsActivity extends FitClient {
     //Sensor de Fitness
     private void registerFitnessDataListener(DataSource dataSource, DataType dataType) {
         SensorRequest request = new SensorRequest.Builder()
-                .setDataSource( dataSource )
-                .setDataType( dataType )
-                .setSamplingRate( 3, TimeUnit.SECONDS )
+                .setDataSource(dataSource)
+                .setDataType(dataType)
+                .setSamplingRate(3, TimeUnit.SECONDS)
                 .build();
 
         onDataPointListener = new OnDataPointListener() {
@@ -289,24 +299,23 @@ public class StepsActivity extends FitClient {
                     @Override
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
-                            Log.e( "GoogleFit", "SensorApi successfully added" );
+                            Log.e("GoogleFit", "SensorApi successfully added");
                         }
                     }
                 });
     }
 
     //BLE
-    private void startBleScan () {
+    private void startBleScan() {
         BleScanCallback callback = new BleScanCallback() {
             @Override
             public void onDeviceFound(BleDevice device) {
                 claimBleDevice(device);
-
-
             }
+
             @Override
             public void onScanStopped() {
-                Log.e( "startBleScan", "onScanStopped" );
+                Log.e("startBleScan", "onScanStopped");
             }
         };
 
@@ -321,22 +330,15 @@ public class StepsActivity extends FitClient {
     }
 
     //BLE
-    private void claimBleDevice (BleDevice bleDevice) {
+    private void claimBleDevice(BleDevice bleDevice) {
         PendingResult<Status> pendingResult =
                 Fitness.BleApi.claimBleDevice(mApiClient, bleDevice);
         pendingResult.setResultCallback(mResultCallback);
     }
 
-    //BLE
-    private void unclaimBleDevice (BleDevice bleDevice) {
-        PendingResult<Status> pendingResult =
-                Fitness.BleApi.unclaimBleDevice(mApiClient, bleDevice);
-        pendingResult.setResultCallback(mResultCallback);
-    }
-
-    private void readStepSaveMidnight () {
+    private void readStepSaveMidnight() {
         sharedPrefStep = PreferenceManager.getDefaultSharedPreferences(this);
-        nbStepSaveMidnight = sharedPrefStep.getInt("THE_STEP_AT_MIDNIGHT",0);
+        nbStepSaveMidnight = sharedPrefStep.getInt("THE_STEP_AT_MIDNIGHT", 0);
     }
 
     private void resetStepSaveMidnight() {
@@ -353,7 +355,7 @@ public class StepsActivity extends FitClient {
         cal.add(Calendar.DAY_OF_MONTH, 1);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, new Intent(context, ResetBroadcastReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000*60*60*24, pi);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000 * 60 * 60 * 24, pi);
     }
 
     private void graficar() {
@@ -367,7 +369,6 @@ public class StepsActivity extends FitClient {
                     public void onResponse(JSONObject response) {
                         try {
                             Gson gson = new Gson();
-
                             Lectura[] lecturas = gson.fromJson(response.getJSONArray("items").toString(), Lectura[].class);
                             graph.addSeries(Graficador.llenarSerie(lecturas, StepsActivity.this));
                         } catch (Exception e) {
@@ -383,6 +384,17 @@ public class StepsActivity extends FitClient {
                 });
         ClienteRest.getInstance(this).addToRequestQueue(jsonObjectRequest);
 
+    }
+
+    private void guardarPasos() {
+        String url = ClienteRest.getRegistroVitalesUrl();
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("unidad", "Pasos");
+        params.put("codigo_pac", String.valueOf(usr.paciente));
+        params.put("codigo_vitales", "7");
+        params.put("valor", String.valueOf(nbStepOfDay));
+        StringRequest stringRequest = ClienteRest.subirDatos(getApplicationContext(), Request.Method.POST, url, "Registro de pasos almacenado", "Error al guardar los pasos", params);
+        ClienteRest.getInstance(this).addToRequestQueue(stringRequest);
     }
 
 }

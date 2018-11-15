@@ -20,15 +20,15 @@ public class Graficador {
     public static LineGraphSeries<DataPoint> llenarSerie(Lectura[] lecturas, final Context context) {
 
         DataPoint[] dataPoints = new DataPoint[lecturas.length];
-        int i = 1;
+        int i = lecturas.length - 1;
         for (Lectura lectura : lecturas) {
             dataPoints[i] = new DataPoint(i, lectura.valor);
-            i++;
+            i--;
         }
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         series.setDrawDataPoints(true);
         series.setDataPointsRadius(10);
-        series.setColor(Color.CYAN);
+        series.setColor(Color.argb(255, 16, 64, 128));
         series.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {

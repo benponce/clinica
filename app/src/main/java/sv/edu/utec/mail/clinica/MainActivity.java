@@ -65,14 +65,15 @@ public class MainActivity extends AppCompatActivity {
 
         bienvenida();
     }
-    private void bienvenida(){
-        try{
+
+    private void bienvenida() {
+        try {
             Gson gson = new Gson();
-            SharedPreferences settings = getSharedPreferences("clinica",0);
-            usr = gson.fromJson(settings.getString("Usuario",""), Usuario.class);
-            String msj="Bienvenido: " + usr.firstName.toString() + " " + usr.lastName.toString();
-            mBanner.setText( msj);
-        } catch (Exception e){
+            SharedPreferences settings = getSharedPreferences("clinica", 0);
+            usr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
+            String msj = "Bienvenido: " + usr.firstName.toString() + " " + usr.lastName.toString();
+            mBanner.setText(msj);
+        } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "Error al leer preferencias de usuario", Toast.LENGTH_LONG).show();
         }
     }

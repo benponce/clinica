@@ -8,12 +8,11 @@
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graphSteps"
-        android:title="Últimos días"
-        android:layout_width="match_parent"
-        android:layout_height="308dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="128dp" />
+        android:layout_width="360dp"
+        android:layout_height="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:title="Últimos días" />
 
     <TextView
         android:id="@+id/txtPasos"
@@ -26,4 +25,13 @@
         android:textColor="@android:color/white"
         android:textSize="24sp"
         android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/tmpGuardar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/txtPasos"
+        android:layout_marginEnd="18dp"
+        android:text="Guardar" />
 </RelativeLayout>
