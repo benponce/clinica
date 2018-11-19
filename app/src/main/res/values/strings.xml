@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">clinica</string>
+    <string name="app_name">Clinica Parroquial Cristo Redentor</string>
     <string name="title_activity_perfil">Perfil</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
+    <string name="title_activity_cita">CitaActivity</string>
 </resources>

@@ -7,7 +7,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import sv.edu.utec.mail.clinica.CitasActivity;
+import sv.edu.utec.mail.clinica.CitaActivity;
 import sv.edu.utec.mail.clinica.HRActivity;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
@@ -43,7 +43,7 @@ public class Control {
 
     public static void Citas(Context context) {
         //Abrir PerfilActivity
-        context.startActivity(new Intent(context, CitasActivity.class));
+        context.startActivity(new Intent(context, CitaActivity.class));
     }
 
     public static void HR(Context context) {

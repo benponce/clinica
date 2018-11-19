@@ -29,7 +29,10 @@
             android:label="@string/title_activity_perfil"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".HRActivity" />
-        <activity android:name=".CitasActivity"></activity>
+        <activity
+            android:name=".CitaActivity"
+            android:label="@string/title_activity_cita"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
