@@ -15,11 +15,11 @@ import sv.edu.utec.mail.clinica.R;
 
 public class CitaDetFragment extends Fragment {
 
-    TextView mMedico;
-    TextView mMotivo;
-    TextView mFecha;
-    Button mRegresar;
-    Button mAgendar;
+    private TextView mMedico;
+    private TextView mMotivo;
+    private TextView mFecha;
+    private Button mRegresar;
+    private Button mAgendar;
     private CitaDetListener mListener;
     private Citas mCita;
 
@@ -37,10 +37,10 @@ public class CitaDetFragment extends Fragment {
         mMotivo = v.findViewById(R.id.txtDlgDesc);
         mAgendar = v.findViewById(R.id.btnCitaAgendar);
         mRegresar = v.findViewById(R.id.btnCitaRegresar);
+        Bundle args = getArguments();
+        mCita = (Citas) args.getSerializable("CitaSelec");
+        refrescarDatos(mCita);
         //Colocar valores y acciones en las view
-        mFecha.setText(mCita.fecha);
-        mMedico.setText(mCita.medico);
-        mMotivo.setText(mCita.descripcion);
         mRegresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,12 +58,17 @@ public class CitaDetFragment extends Fragment {
 
     }
 
+    public void refrescarDatos(Citas cita) {
+        mFecha.setText(mCita.fecha);
+        mMedico.setText(mCita.medico);
+        mMotivo.setText(mCita.descripcion);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
             mListener = (CitaDetListener) context;
-            //mCita = mListener.getCitaSeleccionada();
         } catch (Exception e) {
             Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -75,13 +80,31 @@ public class CitaDetFragment extends Fragment {
         mListener = null;
     }
 
-    public void agendar() {
+    public void agendar() {/*
+        Context ctx = getContext();
+        ContentResolver cr = ctx.getContentResolver();
+        ContentValues vals = new ContentValues();
+        vals.put(CalendarContract.Events.DTSTART, mCita.fecha);
+        vals.put(CalendarContract.Events.TITLE, "Cita médica: " + mCita.medico);
+        vals.put(CalendarContract.Events.DESCRIPTION, mCita.descripcion);
 
+        TimeZone timeZone = TimeZone.getDefault();
+        vals.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+        vals.put(CalendarContract.Events.CALENDAR_ID, 1);
+        vals.put(CalendarContract.Events.RRULE, "COUNT=1");
+
+        vals.put(CalendarContract.Events.HAS_ALARM, 1);
+        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, vals);
+
+        long eventID = Long.parseLong(uri.getLastPathSegment());
+        ContentValues recordatorio = new ContentValues();
+        recordatorio.put(CalendarContract.Reminders.EVENT_ID, eventID);
+        recordatorio.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+        recordatorio.put(CalendarContract.Reminders.MINUTES, 60*24);
+        uri = cr.insert(CalendarContract.Reminders.CONTENT_URI, recordatorio);*/
     }
 
     public interface CitaDetListener {
         void onRegresar();
-
-        Citas getCitaSeleccionada();
     }
 }

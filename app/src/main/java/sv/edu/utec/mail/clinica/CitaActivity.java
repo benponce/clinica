@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import sv.edu.utec.mail.clinica.AppControl.NonSwipeableViewPager;
 import sv.edu.utec.mail.clinica.Fragments.CitaCalFragment;
@@ -16,6 +17,7 @@ public class CitaActivity extends AppCompatActivity
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private NonSwipeableViewPager mViewPager;
+    Citas mCita;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,22 +26,23 @@ public class CitaActivity extends AppCompatActivity
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
+        //Temporalmente
+        mCita = new Citas();
+        mCita.medico = "Dr Matínez";
+        mCita.codigo_cita = 1;
+        mCita.descripcion = "Migraña";
+        mCita.fecha = "20181201";
     }
 
     @Override
-    public void onFechaSelecionada(Citas citas) {
-
+    public void onFechaSelecionada(Citas cita) {
+        mCita = cita;
+        mViewPager.setCurrentItem(1);
     }
 
     @Override
     public void onRegresar() {
-
-    }
-
-    @Override
-    public Citas getCitaSeleccionada() {
-        return null;
+        mViewPager.setCurrentItem(0);
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -50,13 +53,17 @@ public class CitaActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int position) {
-            /*if(position==1){
-                CitaDetFragment detFragment= new CitaDetFragment();
+            if (position == 1) {
+                CitaDetFragment detFragment = new CitaDetFragment();
+                Toast.makeText(CitaActivity.this, mCita.fecha + " " + mCita.medico, Toast.LENGTH_LONG).show();
+                Bundle args = new Bundle();
+                args.putSerializable("CitaSelec", mCita);
+                detFragment.setArguments(args);
                 return detFragment;
-            }else{*/
-            CitaCalFragment calFragment = new CitaCalFragment();
-            return calFragment;
-            //}
+            } else {
+                CitaCalFragment calFragment = new CitaCalFragment();
+                return calFragment;
+            }
         }
 
         @Override

@@ -3,6 +3,7 @@ package sv.edu.utec.mail.clinica.Fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +13,17 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.events.calendar.views.EventsCalendar;
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.EventDay;
+import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import com.google.gson.Gson;
 
-import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.POJO.Citas;
@@ -28,25 +31,39 @@ import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.R;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
 
-public class CitaCalFragment extends Fragment implements EventsCalendar.Callback {
+public class CitaCalFragment extends Fragment {
 
-    EventsCalendar mCalendario;
+    CalendarView mCalendario;
     Usuario usr;
     Citas[] arrCitas;
     private CitaCalListener mListener;
 
     public CitaCalFragment() {
-        // Required empty public constructor
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_cita_cal, container, false);
-        mCalendario = v.findViewById(R.id.eventsCalendar);
         usr = Control.getUsuario(getActivity());
+        mCalendario = v.findViewById(R.id.calendarView);
+        Calendar min = Calendar.getInstance();
+        min.add(Calendar.MONTH, -1);
+        Calendar max = Calendar.getInstance();
+        max.add(Calendar.MONTH, 12);
+        mCalendario.setMinimumDate(min);
+        mCalendario.setMaximumDate(max);
+        mCalendario.setOnDayClickListener(new OnDayClickListener() {
+            @Override
+            public void onDayClick(EventDay eventDay) {
+                verCita(eventDay);
+            }
+        });
+        arrCitas = Control.getCitas(getContext());
+        if (arrCitas != null) {
+            colocarCitas(arrCitas);
+        }
         descargarCitas();
         return v;
     }
@@ -76,8 +93,15 @@ public class CitaCalFragment extends Fragment implements EventsCalendar.Callback
                     public void onResponse(JSONObject response) {
                         Gson gson = new Gson();
                         try {
-                            colocarCitas(gson.fromJson(response.getJSONArray("items").toString(), Citas[].class));
-                        } catch (JSONException e) {
+                            String str_JSON = response.getJSONArray("items").toString();
+                            if (!str_JSON.equals("[]")) {
+                                arrCitas = gson.fromJson(str_JSON, Citas[].class);
+                                mCalendario.setEvents(colocarCitas(arrCitas));
+                                Control.escribirCitas(getContext(), str_JSON);
+                            } else {
+                                Toast.makeText(getActivity(), "No tiene Citas programadas.", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
                             Toast.makeText(getActivity(), "No tiene registro de citas.", Toast.LENGTH_LONG).show();
                         }
                     }
@@ -92,41 +116,35 @@ public class CitaCalFragment extends Fragment implements EventsCalendar.Callback
     }
 
 
-    private void colocarCitas(Citas[] citas) {
-        arrCitas = citas;
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Calendar cal = Calendar.getInstance();
+    private List<EventDay> colocarCitas(Citas[] citas) {
+        List<EventDay> events = new ArrayList<>();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        Calendar[] cal = new Calendar[citas.length];
+        int i = 0;
         for (Citas cita : citas) {
             try {
-                cal.setTime(df.parse(cita.fecha));
-                mCalendario.addEvent(cal);
+                cal[i] = Calendar.getInstance();
+                cal[i].setTime(df.parse(cita.fecha));
+                events.add(new EventDay(cal[i], R.drawable.ic_citas_marca));
             } catch (Exception e) {
-                Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("Agregar eventos", e.getMessage());
             }
+            i++;
         }
+        return events;
     }
 
-    @Override
-    public void onDaySelected(@Nullable Calendar calendar) {
-        //TODO enviar la cita que corresponde al dia seleccionado
-        String cFecha = Calendar.YEAR + "-" + Calendar.MONTH + "-" + Calendar.DAY_OF_MONTH;
+    public void verCita(EventDay eventDay) {
+        Calendar cal = eventDay.getCalendar();
+        //El calendario se recibe con defase de un mes
+        cal.add(Calendar.MONTH, 1);
+        String strFecha = cal.get(Calendar.YEAR) + "" + cal.get(Calendar.MONTH) + "" + cal.get(Calendar.DATE);
         for (Citas cita : arrCitas) {
-            if (cita.fecha.equals(cFecha)) {
+            if (strFecha.equals(cita.fecha)) {
                 mListener.onFechaSelecionada(cita);
                 break;
             }
         }
-
-    }
-
-    @Override
-    public void onMonthChanged(@Nullable Calendar calendar) {
-
-    }
-
-    @Override
-    public void onDayLongPressed(@Nullable Calendar calendar) {
-
     }
 
     public interface CitaCalListener {

@@ -2,7 +2,9 @@ package sv.edu.utec.mail.clinica.POJO;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Citas {
+import java.io.Serializable;
+
+public class Citas implements Serializable {
     @SerializedName("codigo_cita")
     public int codigo_cita;
 
