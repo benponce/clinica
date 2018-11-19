@@ -109,7 +109,14 @@ public class CitaCalFragment extends Fragment implements EventsCalendar.Callback
     @Override
     public void onDaySelected(@Nullable Calendar calendar) {
         //TODO enviar la cita que corresponde al dia seleccionado
-        mListener.onFechaSelecionada(new Citas());
+        String cFecha = Calendar.YEAR + "-" + Calendar.MONTH + "-" + Calendar.DAY_OF_MONTH;
+        for (Citas cita : arrCitas) {
+            if (cita.fecha.equals(cFecha)) {
+                mListener.onFechaSelecionada(cita);
+                break;
+            }
+        }
+
     }
 
     @Override
