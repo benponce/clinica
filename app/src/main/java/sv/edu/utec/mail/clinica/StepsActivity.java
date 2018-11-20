@@ -119,39 +119,43 @@ public class StepsActivity extends FitClient {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
 
-        mBanner = findViewById(R.id.txtPasos);
-        graph = findViewById(R.id.graphSteps);
-        graph.getViewport().setXAxisBoundsManual(true);
-        graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(10);
-        graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(10000);
-        graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
-        graph.addSeries(Graficador.lineaMeta());
-        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
-        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
+        try {
+            mBanner = findViewById(R.id.txtPasos);
+            graph = findViewById(R.id.graphSteps);
+            graph.getViewport().setXAxisBoundsManual(true);
+            graph.getViewport().setMinX(0);
+            graph.getViewport().setMaxX(10);
+            graph.getViewport().setYAxisBoundsManual(true);
+            graph.getViewport().setMinY(0);
+            graph.getViewport().setMaxY(10000);
+            graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
+            graph.addSeries(Graficador.lineaMeta());
+            graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
+            graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
 
-        mTmpGuardar = findViewById(R.id.tmpGuardar);
-        mTmpGuardar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                guardarPasos();
-            }
-        });
+            mTmpGuardar = findViewById(R.id.tmpGuardar);
+            mTmpGuardar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    guardarPasos();
+                }
+            });
 
-        usr = Control.getUsuario(this);
+            usr = Control.getUsuario(this);
 
-        hist = HistoryService.getInstance();
+            hist = HistoryService.getInstance();
 
-        hist.buildFitnessClientHistory(this);
+            hist.buildFitnessClientHistory(this);
 
-        buildSensor();
+            buildSensor();
 
-        readStepSaveMidnight();
+            readStepSaveMidnight();
 
-        resetCounter(this);
-        graficar();
+            resetCounter(this);
+            graficar();
+        } catch (Exception e) {
+            Toast.makeText(this, "Tronó: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
