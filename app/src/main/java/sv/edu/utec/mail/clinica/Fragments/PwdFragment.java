@@ -1,9 +1,7 @@
 package sv.edu.utec.mail.clinica.Fragments;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,15 +13,12 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.google.gson.Gson;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
-import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.R;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
 
 public class PwdFragment extends Fragment {
-    Usuario usr;
     EditText mActual;
     EditText mNueva;
     EditText mConfirm;
@@ -33,14 +28,7 @@ public class PwdFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pwd, container, false);
-        try {
-            Gson gson = new Gson();
-            SharedPreferences settings = this.getActivity().getSharedPreferences("clinica", 0);
-            usr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
 
-        } catch (Exception e) {
-            Log.i("Usuario", "No se encontró");
-        }
         mActual = view.findViewById(R.id.pwdActual);
         mNueva = view.findViewById(R.id.pwdNueva);
         mConfirm = view.findViewById(R.id.pwdConfirm);
@@ -58,12 +46,12 @@ public class PwdFragment extends Fragment {
         String strActual = mActual.getText().toString();
         String strNueva = mNueva.getText().toString();
         String strConfirm = mConfirm.getText().toString();
-        if (usr.pwd.equals(strActual)) {
+        if (Control.sysUsr.pwd.equals(strActual)) {
             if (strNueva.equals(strActual)) {
                 Toast.makeText(getActivity(), "La Nueva contraseña debe ser diferente a la Actual.", Toast.LENGTH_LONG).show();
             } else {
                 if (strNueva.equals(strConfirm)) {
-                    String url = ClienteRest.getCambioPwd() + strNueva + '/' + usr.id;
+                    String url = ClienteRest.getCambioPwd() + strNueva + '/' + Control.sysUsr.id;
                     StringRequest stringRequest = new StringRequest
                             (Request.Method.PUT, url, new Response.Listener<String>() {
                                 @Override

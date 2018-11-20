@@ -18,9 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
@@ -44,10 +41,7 @@ import com.google.android.gms.fitness.request.OnDataPointListener;
 import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.request.StartBleScanRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
-import com.google.gson.Gson;
 import com.jjoe64.graphview.GraphView;
-
-import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -58,8 +52,6 @@ import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
 import sv.edu.utec.mail.clinica.Fitness.HistoryService;
 import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
-import sv.edu.utec.mail.clinica.POJO.Lectura;
-import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
@@ -67,7 +59,6 @@ public class StepsActivity extends FitClient {
 
     TextView mBanner;
     GraphView graph;
-    Usuario usr;
     Button mTmpGuardar;
 
     private OnDataPointListener onDataPointListener;
@@ -119,42 +110,40 @@ public class StepsActivity extends FitClient {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
 
-        try {
-            mBanner = findViewById(R.id.txtPasos);
-            graph = findViewById(R.id.graphSteps);
-            graph.getViewport().setXAxisBoundsManual(true);
-            graph.getViewport().setMinX(0);
-            graph.getViewport().setMaxX(10);
-            graph.getViewport().setYAxisBoundsManual(true);
-            graph.getViewport().setMinY(0);
-            graph.getViewport().setMaxY(10000);
-            graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
-            graph.addSeries(Graficador.lineaMeta());
-            graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
-            graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
+        mBanner = findViewById(R.id.txtPasos);
+        graph = findViewById(R.id.graphSteps);
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(10);
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(0);
+        graph.getViewport().setMaxY(10000);
+        graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
+        graph.addSeries(Graficador.lineaMeta());
+        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
+        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
 
-            mTmpGuardar = findViewById(R.id.tmpGuardar);
-            mTmpGuardar.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    guardarPasos();
-                }
-            });
+        mTmpGuardar = findViewById(R.id.tmpGuardar);
+        mTmpGuardar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                guardarPasos();
+            }
+        });
 
-            usr = Control.getUsuario(this);
+        hist = HistoryService.getInstance();
 
-            hist = HistoryService.getInstance();
+        hist.buildFitnessClientHistory(this);
 
-            hist.buildFitnessClientHistory(this);
+        buildSensor();
 
-            buildSensor();
+        readStepSaveMidnight();
 
-            readStepSaveMidnight();
-
-            resetCounter(this);
-            graficar();
-        } catch (Exception e) {
-            Toast.makeText(this, "Tronó: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        resetCounter(this);
+        if (Control.usrPasos != null) {
+            graph.addSeries(Graficador.llenarSerie(Control.usrPasos, StepsActivity.this));
+        } else {
+            Toast.makeText(this, "No tienes registro de pasos", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -362,39 +351,11 @@ public class StepsActivity extends FitClient {
         am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000 * 60 * 60 * 24, pi);
     }
 
-    private void graficar() {
-
-        String url = ClienteRest.getPasosUrl() + usr.paciente;
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Gson gson = new Gson();
-                            Lectura[] lecturas = gson.fromJson(response.getJSONArray("items").toString(), Lectura[].class);
-                            graph.addSeries(Graficador.llenarSerie(lecturas, StepsActivity.this));
-                        } catch (Exception e) {
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getApplicationContext(), "No tiene registro de pasos ", Toast.LENGTH_LONG).show();
-                    }
-                });
-        ClienteRest.getInstance(this).addToRequestQueue(jsonObjectRequest);
-
-    }
-
     private void guardarPasos() {
         String url = ClienteRest.getRegistroVitalesUrl();
         Map<String, String> params = new HashMap<String, String>();
         params.put("unidad", "Pasos");
-        params.put("codigo_pac", String.valueOf(usr.paciente));
+        params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
         params.put("codigo_vitales", "7");
         params.put("valor", String.valueOf(nbStepOfDay));
         StringRequest stringRequest = ClienteRest.subirDatos(getApplicationContext(), Request.Method.POST, url, "Registro de pasos almacenado", "Error al guardar los pasos", params);

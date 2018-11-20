@@ -44,12 +44,12 @@ public class LoginActivity extends AppCompatActivity {
         try{
             Gson gson = new Gson();
             SharedPreferences settings = getSharedPreferences("clinica",0);
-            Usuario usr = gson.fromJson(settings.getString("Usuario",""), Usuario.class);
-            if(usr!=null){
+            Control.sysUsr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
+            if (Control.sysUsr != null) {
                 redireccionar();
             }
         } catch (Exception e){
-            Log.v("Login","No registrado");
+            Log.d("Login", "No registrado");
         }
     }
 
@@ -63,9 +63,15 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        guardarIngreso(response);
-                        Toast.makeText(getApplicationContext(), "Usuario verificado", Toast.LENGTH_LONG).show();
-                        redireccionar();
+                        try {
+                            Gson gson = new Gson();
+                            Control.sysUsr = gson.fromJson(response.toString(), Usuario.class);
+                            guardarIngreso(response);
+                            Toast.makeText(getApplicationContext(), "Usuario verificado", Toast.LENGTH_LONG).show();
+                            redireccionar();
+                        } catch (Exception e) {
+                            Log.d("Lectura de usuario", e.getMessage());
+                        }
                     }
                 }, new Response.ErrorListener() {
 

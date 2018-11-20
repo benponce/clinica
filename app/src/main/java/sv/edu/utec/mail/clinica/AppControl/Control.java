@@ -3,7 +3,7 @@ package sv.edu.utec.mail.clinica.AppControl;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.widget.Toast;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -28,6 +28,7 @@ public class Control {
     }
 
     public static void Salir(Context context) {
+        sysUsr = null;
         //Borrar registro del usuario
         SharedPreferences sp = context.getSharedPreferences("clinica", 0);
         SharedPreferences.Editor editor = sp.edit();
@@ -57,32 +58,22 @@ public class Control {
         context.startActivity(new Intent(context, HRActivity.class));
     }
 
-    public static Usuario getUsuario(Context context) {
+    public static void readOffLine(Context context) {
+        Gson gson = new Gson();
+        SharedPreferences settings = context.getSharedPreferences("clinica", 0);
         try {
-            Gson gson = new Gson();
-            SharedPreferences settings = context.getSharedPreferences("clinica", 0);
-            return gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
+            usrCitas = gson.fromJson(settings.getString("Citas", ""), Citas[].class);
         } catch (Exception e) {
-            Toast.makeText(context, "Error al leer preferencias de usuario", Toast.LENGTH_SHORT).show();
-            return null;
+            usrCitas = null;
+            Log.d("Citas", e.getMessage());
         }
-    }
-
-    public static Citas[] getCitas(Context context) {
         try {
-            Gson gson = new Gson();
-            SharedPreferences settings = context.getSharedPreferences("clinica", 0);
-            return gson.fromJson(settings.getString("Citas", ""), Citas[].class);
+            usrPasos = gson.fromJson(settings.getString("Pasos", ""), Lectura[].class);
         } catch (Exception e) {
-            return null;
+            usrPasos = null;
+            Log.d("Pasos", e.getMessage());
         }
-    }
 
-    public static void escribirCitas(Context context, String strCitas) {
-        SharedPreferences sp = context.getSharedPreferences("clinica", 0);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("Citas", strCitas);
-        editor.commit();
     }
 
 }

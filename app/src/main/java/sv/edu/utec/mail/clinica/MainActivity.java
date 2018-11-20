@@ -1,21 +1,17 @@
 package sv.edu.utec.mail.clinica;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.gson.Gson;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
-import sv.edu.utec.mail.clinica.POJO.Usuario;
+import sv.edu.utec.mail.clinica.Red.Sincro;
 
 public class MainActivity extends AppCompatActivity {
+    boolean DESCARGAR = true;
     TextView mBanner;
-    Usuario usr;
     ImageView mLogout;
     ImageView mHeartRate;
     ImageView mCitas;
@@ -62,20 +58,23 @@ public class MainActivity extends AppCompatActivity {
                 Control.Perfil(MainActivity.this);
             }
         });
-
         bienvenida();
+        Control.readOffLine(this);
+        if (DESCARGAR || Control.usrCitas == null || Control.usrPasos == null) {
+            descargarDatos();
+            DESCARGAR = false;
+        }
+
     }
 
     private void bienvenida() {
-        try {
-            Gson gson = new Gson();
-            SharedPreferences settings = getSharedPreferences("clinica", 0);
-            usr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
-            String msj = "Bienvenido: " + usr.firstName.toString() + " " + usr.lastName.toString();
-            mBanner.setText(msj);
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "Error al leer preferencias de usuario", Toast.LENGTH_LONG).show();
-        }
+        String msj = "Bienvenido: " + Control.sysUsr.firstName.toString() + " " + Control.sysUsr.lastName.toString();
+        mBanner.setText(msj);
+    }
+
+    private void descargarDatos() {
+        Sincro.getInstance(this).downloadPasos();
+        Sincro.getInstance(this).downloadCitas();
     }
 
     @Override

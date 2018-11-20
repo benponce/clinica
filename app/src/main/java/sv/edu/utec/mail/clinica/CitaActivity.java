@@ -5,16 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
-import com.google.gson.Gson;
-
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,21 +17,16 @@ import java.util.List;
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fragments.CitaDialogFragment;
 import sv.edu.utec.mail.clinica.POJO.Citas;
-import sv.edu.utec.mail.clinica.POJO.Usuario;
-import sv.edu.utec.mail.clinica.Red.ClienteRest;
 
 public class CitaActivity extends AppCompatActivity implements CitaDialogFragment.CitaDlgListener {
 
     CalendarView mCalendario;
-    Usuario usr;
-    Citas[] arrCitas;
     Citas mCitaSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cita);
-        usr = Control.getUsuario(this);
         mCalendario = findViewById(R.id.calendarView);
         Calendar min = Calendar.getInstance();
         min.add(Calendar.MONTH, -1);
@@ -52,44 +40,11 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
                 verCita(eventDay);
             }
         });
-        arrCitas = Control.getCitas(this);
-        if (arrCitas != null) {
-            colocarCitas(arrCitas);
+        if (Control.usrCitas != null) {
+            mCalendario.setEvents(colocarCitas(Control.usrCitas));
+        } else {
+            Toast.makeText(this, "No tienes citas programadas.", Toast.LENGTH_LONG).show();
         }
-        descargarCitas();
-    }
-
-    private void descargarCitas() {
-
-        //http://www.zoftino.com/how-to-read-and-write-calendar-data-in-android
-        String url = ClienteRest.getCitasUrl() + usr.paciente;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Gson gson = new Gson();
-                        try {
-                            String str_JSON = response.getJSONArray("items").toString();
-                            if (!str_JSON.equals("[]")) {
-                                arrCitas = gson.fromJson(str_JSON, Citas[].class);
-                                mCalendario.setEvents(colocarCitas(arrCitas));
-                                Control.escribirCitas(CitaActivity.this, str_JSON);
-                            } else {
-                                Toast.makeText(CitaActivity.this, "No tiene Citas programadas.", Toast.LENGTH_LONG).show();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(CitaActivity.this, "No tiene registro de citas.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(CitaActivity.this, "No tiene registro de citas.", Toast.LENGTH_LONG).show();
-                    }
-                });
-        ClienteRest.getInstance(CitaActivity.this).addToRequestQueue(jsonObjectRequest);
     }
 
     private List<EventDay> colocarCitas(Citas[] citas) {
@@ -115,7 +70,7 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
         //El calendario se recibe con defase de un mes
         cal.add(Calendar.MONTH, 1);
         String strFecha = cal.get(Calendar.YEAR) + "" + cal.get(Calendar.MONTH) + "" + cal.get(Calendar.DATE);
-        for (Citas cita : arrCitas) {
+        for (Citas cita : Control.usrCitas) {
             if (strFecha.equals(cita.fecha)) {
                 mCitaSelected = cita;
                 CitaDialogFragment citaDlg = new CitaDialogFragment();
