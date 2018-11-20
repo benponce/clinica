@@ -12,11 +12,16 @@ import sv.edu.utec.mail.clinica.HRActivity;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
 import sv.edu.utec.mail.clinica.POJO.Citas;
+import sv.edu.utec.mail.clinica.POJO.Lectura;
 import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.PerfilActivity;
 import sv.edu.utec.mail.clinica.StepsActivity;
 
 public class Control {
+    public static Usuario sysUsr;
+    public static Lectura[] usrPasos;
+    public static Citas[] usrCitas;
+
     public static void RedirectMain(Context context) {
         //Abrir MainActivity
         context.startActivity(new Intent(context, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).addCategory(Intent.CATEGORY_HOME));
