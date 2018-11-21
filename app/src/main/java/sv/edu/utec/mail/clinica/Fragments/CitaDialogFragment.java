@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -84,13 +85,13 @@ public class CitaDialogFragment extends DialogFragment {
     }
 
 
-    public void refrescarDatos() {
+    private void refrescarDatos() {
         mFecha.setText(mCita.fecha.substring(6, 8) + "/" + mCita.fecha.substring(4, 6) + "/" + mCita.fecha.substring(0, 4));
         mMedico.setText(mCita.medico);
         mMotivo.setText(mCita.descripcion);
     }
 
-    public void agendar() {
+    private void agendar() {
         try {
             if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_CALENDAR}, MY_CAL_WRITE_REQ);
@@ -99,41 +100,81 @@ public class CitaDialogFragment extends DialogFragment {
             SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
             Calendar cal = Calendar.getInstance();
             cal.setTime(df.parse(mCita.fecha));
-            //
             ContentResolver cr = getActivity().getContentResolver();
-            ContentValues values = new ContentValues();
-            //Preparar evento
-            values.put(CalendarContract.Events.DTSTART, cal.getTimeInMillis());
-            values.put(CalendarContract.Events.DTEND, cal.getTimeInMillis());
-            values.put(CalendarContract.Events.TITLE, "Cita médica - " + mCita.medico);
-            values.put(CalendarContract.Events.DESCRIPTION, mCita.descripcion);
-            values.put(CalendarContract.Events.CALENDAR_ID, 1);
-            values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
-            values.put(CalendarContract.Events.EVENT_LOCATION, "Clinica Parroquial Cristo Redentor");
-            values.put(CalendarContract.Events.HAS_ALARM, 1);
-            values.put(CalendarContract.EXTRA_EVENT_ALL_DAY, true);
-            //Insertar evento
-            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
-            long eventID = Long.parseLong(uri.getLastPathSegment());
-            //Recordatorios
-            //Alarma
-            ContentValues alarma = new ContentValues();
-            alarma.put(CalendarContract.Reminders.EVENT_ID, eventID);
-            alarma.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
-            alarma.put(CalendarContract.Reminders.MINUTES, 60 * 6);
-            cr.insert(CalendarContract.Reminders.CONTENT_URI, alarma);
-            //Correo
-            ContentValues correo = new ContentValues();
-            correo.put(CalendarContract.Reminders.EVENT_ID, eventID);
-            correo.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_EMAIL);
-            correo.put(CalendarContract.Reminders.MINUTES, 60 * 12);
-            cr.insert(CalendarContract.Reminders.CONTENT_URI, correo);
-            //Informar al usuario
-            Toast.makeText(getActivity(), "Cita agendada con éxito.\nSe te notificará por correo el día previo a la cita para que no la olvides.", Toast.LENGTH_LONG).show();
+            //Validar evento
+            if (queryEvento(cr, String.valueOf(cal.getTimeInMillis())).moveToNext()) {
+                Toast.makeText(getActivity(), "Ya posee agendada una cita médica para esta fecha.", Toast.LENGTH_LONG).show();
+            } else {
+                ContentValues evento = prepararEvento(cr, cal, timeZone);
+                //Insertar evento
+                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, evento);
+                long eventID = Long.parseLong(uri.getLastPathSegment());
+                //Recordatorios
+                //Alarma
+                ContentValues alarma = prepararAlarma(cr, eventID);
+                cr.insert(CalendarContract.Reminders.CONTENT_URI, alarma);
+                //Correo
+                ContentValues correo = prepararCorreo(cr, eventID);
+                cr.insert(CalendarContract.Reminders.CONTENT_URI, correo);
+                //Informar al usuario
+                Toast.makeText(getActivity(), "Cita agendada con éxito.\nSe te notificará por correo el día previo a la cita para que no la olvides.", Toast.LENGTH_LONG).show();
+            }
         } catch (ParseException e) {
             Toast.makeText(getActivity(), "No fue posible agendar la cita médica.\nPosiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
             Log.d("Conversión de Fecha", e.getMessage());
         }
+    }
+
+    private Cursor queryEvento(ContentResolver cr, String dtStart) {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_CALENDAR}, MY_CAL_WRITE_REQ);
+        }
+
+        String[] mProjection =
+                {
+                        "_id",
+                        CalendarContract.Events.EVENT_LOCATION,
+                        CalendarContract.Events.DTSTART,
+                };
+
+        Uri uri = CalendarContract.Events.CONTENT_URI;
+        String selection = "(" + CalendarContract.Events.EVENT_LOCATION + " = ? ) AND ("
+                + CalendarContract.Events.DTSTART + " =? )";
+        String[] selectionArgs = new String[]{"Clinica Parroquial Cristo Redentor", dtStart};
+
+        return cr.query(uri, mProjection, selection, selectionArgs, null);
+    }
+
+
+    private ContentValues prepararEvento(ContentResolver cr, Calendar cal, TimeZone timeZone) {
+        ContentValues values = new ContentValues();
+        //Preparar evento
+        values.put(CalendarContract.Events.DTSTART, cal.getTimeInMillis());
+        values.put(CalendarContract.Events.DTEND, cal.getTimeInMillis());
+        values.put(CalendarContract.Events.TITLE, "Cita médica - " + mCita.medico);
+        values.put(CalendarContract.Events.DESCRIPTION, mCita.descripcion);
+        values.put(CalendarContract.Events.CALENDAR_ID, 1);
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
+        values.put(CalendarContract.Events.EVENT_LOCATION, "Clinica Parroquial Cristo Redentor");
+        values.put(CalendarContract.Events.HAS_ALARM, 1);
+        values.put(CalendarContract.EXTRA_EVENT_ALL_DAY, true);
+        return values;
+    }
+
+    private ContentValues prepararAlarma(ContentResolver cr, long id) {
+        ContentValues cv = new ContentValues();
+        cv.put(CalendarContract.Reminders.EVENT_ID, id);
+        cv.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+        cv.put(CalendarContract.Reminders.MINUTES, 60 * 6);
+        return cv;
+    }
+
+    private ContentValues prepararCorreo(ContentResolver cr, long id) {
+        ContentValues cv = new ContentValues();
+        cv.put(CalendarContract.Reminders.EVENT_ID, id);
+        cv.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_EMAIL);
+        cv.put(CalendarContract.Reminders.MINUTES, 60 * 12);
+        return cv;
     }
 
     public interface CitaDlgListener {
