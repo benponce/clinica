@@ -12,6 +12,7 @@ import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
@@ -66,10 +67,11 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
     }
 
     public void verCita(EventDay eventDay) {
-        Calendar cal = eventDay.getCalendar();
-        //El calendario se recibe con defase de un mes
-        cal.add(Calendar.MONTH, 1);
-        String strFecha = cal.get(Calendar.YEAR) + "" + cal.get(Calendar.MONTH) + "" + cal.get(Calendar.DATE);
+        //Leer la fecha seleccionada
+        Date fecha = eventDay.getCalendar().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String strFecha = df.format(fecha);
+        //Buscar la cita que corresponde a la fecha, si la hay
         for (Citas cita : Control.usrCitas) {
             if (strFecha.equals(cita.fecha)) {
                 mCitaSelected = cita;

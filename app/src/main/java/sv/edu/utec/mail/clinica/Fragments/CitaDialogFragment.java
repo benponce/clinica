@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -29,7 +30,7 @@ import sv.edu.utec.mail.clinica.POJO.Citas;
 import sv.edu.utec.mail.clinica.R;
 
 public class CitaDialogFragment extends DialogFragment {
-    public final int MY_CAL_WRITE_REQ = 1010;
+    public final int CALENDAR_ACCESS_REQUEST = 1010;
     private TextView mMedico;
     private TextView mMotivo;
     private TextView mFecha;
@@ -92,57 +93,84 @@ public class CitaDialogFragment extends DialogFragment {
     }
 
     private void agendar() {
+        String[] permisos = new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR};
         try {
-            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_CALENDAR}, MY_CAL_WRITE_REQ);
-            }
-            TimeZone timeZone = TimeZone.getDefault();
-            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(df.parse(mCita.fecha));
-            ContentResolver cr = getActivity().getContentResolver();
-            //Validar evento
-            if (queryEvento(cr, String.valueOf(cal.getTimeInMillis())).moveToNext()) {
-                Toast.makeText(getActivity(), "Ya posee agendada una cita médica para esta fecha.", Toast.LENGTH_LONG).show();
+            if (ActivityCompat.checkSelfPermission(getActivity(), permisos[0]) != PackageManager.PERMISSION_GRANTED ||
+                    ActivityCompat.checkSelfPermission(getActivity(), permisos[1]) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(getActivity(), permisos, CALENDAR_ACCESS_REQUEST);
             } else {
-                ContentValues evento = prepararEvento(cr, cal, timeZone);
-                //Insertar evento
-                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, evento);
-                long eventID = Long.parseLong(uri.getLastPathSegment());
-                //Recordatorios
-                //Alarma
-                ContentValues alarma = prepararAlarma(cr, eventID);
-                cr.insert(CalendarContract.Reminders.CONTENT_URI, alarma);
-                //Correo
-                ContentValues correo = prepararCorreo(cr, eventID);
-                cr.insert(CalendarContract.Reminders.CONTENT_URI, correo);
-                //Informar al usuario
-                Toast.makeText(getActivity(), "Cita agendada con éxito.\nSe te notificará por correo el día previo a la cita para que no la olvides.", Toast.LENGTH_LONG).show();
+                TimeZone timeZone = TimeZone.getDefault();
+                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(df.parse(mCita.fecha));
+                ContentResolver cr = getActivity().getContentResolver();
+                //Validar evento
+                if (queryEvento(cr, String.valueOf(cal.getTimeInMillis())).moveToNext()) {
+                    Toast.makeText(getActivity(), "Ya posee agendada una cita médica para esta fecha.", Toast.LENGTH_LONG).show();
+                } else {
+                    ContentValues evento = prepararEvento(cr, cal, timeZone);
+                    //Insertar evento
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, evento);
+                    long eventID = Long.parseLong(uri.getLastPathSegment());
+                    //Recordatorios
+                    //Alarma
+                    ContentValues alarma = prepararAlarma(cr, eventID);
+                    cr.insert(CalendarContract.Reminders.CONTENT_URI, alarma);
+                    //Correo
+                    ContentValues correo = prepararCorreo(cr, eventID);
+                    cr.insert(CalendarContract.Reminders.CONTENT_URI, correo);
+                    //Informar al usuario
+                    Toast.makeText(getActivity(), "Cita agendada con éxito.\nSe te notificará por correo el día previo a la cita para que no la olvides.", Toast.LENGTH_LONG).show();
+                }
             }
         } catch (ParseException e) {
-            Toast.makeText(getActivity(), "No fue posible agendar la cita médica.\nPosiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
-            Log.d("Conversión de Fecha", e.getMessage());
+            Toast.makeText(getActivity(), "No fue posible agendar la cita médica.", Toast.LENGTH_LONG).show();
+            Log.d("Agendar cita", e.getMessage());
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CALENDAR_ACCESS_REQUEST) {
+            boolean allGranted = false;
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    allGranted = true;
+                } else {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted) {
+                agendar();
+            } else {
+                Toast.makeText(getActivity(), "No fue posible agendar la cita médica.\nPosiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     private Cursor queryEvento(ContentResolver cr, String dtStart) {
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_CALENDAR}, MY_CAL_WRITE_REQ);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_CALENDAR}, CALENDAR_ACCESS_REQUEST);
+            return null;
+        } else {
+
+            String[] mProjection =
+                    {
+                            "_id",
+                            CalendarContract.Events.EVENT_LOCATION,
+                            CalendarContract.Events.DTSTART,
+                    };
+
+            Uri uri = CalendarContract.Events.CONTENT_URI;
+            String selection = "(" + CalendarContract.Events.EVENT_LOCATION + " = ? ) AND ("
+                    + CalendarContract.Events.DTSTART + " =? )";
+            String[] selectionArgs = new String[]{"Clinica Parroquial Cristo Redentor", dtStart};
+
+            return cr.query(uri, mProjection, selection, selectionArgs, null);
         }
-
-        String[] mProjection =
-                {
-                        "_id",
-                        CalendarContract.Events.EVENT_LOCATION,
-                        CalendarContract.Events.DTSTART,
-                };
-
-        Uri uri = CalendarContract.Events.CONTENT_URI;
-        String selection = "(" + CalendarContract.Events.EVENT_LOCATION + " = ? ) AND ("
-                + CalendarContract.Events.DTSTART + " =? )";
-        String[] selectionArgs = new String[]{"Clinica Parroquial Cristo Redentor", dtStart};
-
-        return cr.query(uri, mProjection, selection, selectionArgs, null);
     }
 
 
