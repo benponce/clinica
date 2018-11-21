@@ -184,7 +184,7 @@ public class CitaDialogFragment extends DialogFragment {
         values.put(CalendarContract.Events.CALENDAR_ID, 1);
         values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
         values.put(CalendarContract.Events.EVENT_LOCATION, "Clinica Parroquial Cristo Redentor");
-        values.put(CalendarContract.Events.HAS_ALARM, 1);
+        values.put(CalendarContract.Events.HAS_ALARM, true);
         values.put(CalendarContract.EXTRA_EVENT_ALL_DAY, true);
         return values;
     }

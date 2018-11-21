@@ -1,7 +1,5 @@
 package sv.edu.utec.mail.clinica;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -22,36 +20,27 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.FitnessStatusCodes;
-import com.google.android.gms.fitness.data.BleDevice;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.data.Value;
-import com.google.android.gms.fitness.request.BleScanCallback;
 import com.google.android.gms.fitness.request.DataSourcesRequest;
 import com.google.android.gms.fitness.request.OnDataPointListener;
 import com.google.android.gms.fitness.request.SensorRequest;
-import com.google.android.gms.fitness.request.StartBleScanRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
 import com.jjoe64.graphview.GraphView;
 
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
-import sv.edu.utec.mail.clinica.Fitness.HistoryService;
-import sv.edu.utec.mail.clinica.Fitness.ResetBroadcastReceiver;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
@@ -70,46 +59,16 @@ public class StepsActivity extends FitClient {
      * en que se da la medición, para realizar el reseteo a cero.
      */
     private final DataType DATA_TYPE = DataType.TYPE_STEP_COUNT_DELTA;
-    private final int DATA_SOURCE = DataSource.TYPE_DERIVED;
-
     private static final int REQUEST_OAUTH = 1;
-
     private static final String AUTH_PENDING = "auth_state_pending";
-
-    private static final int REQUEST_BLUETOOTH = 1001;
-
-    private int nbStepSaveMidnight = 0;
-
     private boolean authInProgress = false;
-
     //Cliente de la API
     private GoogleApiClient mApiClient;
 
     //SharedPreferences
     private SharedPreferences sharedPrefStep;
-    public int nbStepOfDay;
-
-    //Cliente del historial de Google Fit
-    private HistoryService hist;
-
-    private final ResultCallback mResultCallback = new ResultCallback() {
-        @Override
-        public void onResult(@NonNull Result result) {
-            Status status = result.getStatus();
-            if (!status.isSuccess()) {
-                switch (status.getStatusCode()) {
-                    case FitnessStatusCodes.DISABLED_BLUETOOTH:
-                        try {
-                            status.startResolutionForResult(
-                                    StepsActivity.this, REQUEST_BLUETOOTH);
-                        } catch (IntentSender.SendIntentException e) {
-
-                        }
-                        break;
-                }
-            }
-        }
-    };
+    public int pasosHoy;
+    private Date hoy = new Date();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,14 +99,8 @@ public class StepsActivity extends FitClient {
             }
         });
 
-        hist = HistoryService.getInstance();
-
-        hist.buildFitnessClientHistory(this);
-
         buildSensor();
-
         readStepSaveMidnight();
-
         resetCounter(this);
         if (Control.usrPasos != null) {
             graph.addSeries(Graficador.llenarSerie(Control.usrPasos, StepsActivity.this));
@@ -158,10 +111,9 @@ public class StepsActivity extends FitClient {
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        //Sensor Fitness Part
         DataSourcesRequest dataSourceRequest = new DataSourcesRequest.Builder()
                 .setDataTypes(DATA_TYPE)
-                .setDataSourceTypes(DATA_SOURCE)
+                //.setDataSourceTypes(DATA_SOURCE)
                 .build();
 
         ResultCallback<DataSourcesResult> dataSourcesResultCallback = new ResultCallback<DataSourcesResult>() {
@@ -174,7 +126,6 @@ public class StepsActivity extends FitClient {
                 }
             }
         };
-
         Fitness.SensorsApi.findDataSources(mApiClient, dataSourceRequest)
                 .setResultCallback(dataSourcesResultCallback);
     }
@@ -182,23 +133,13 @@ public class StepsActivity extends FitClient {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case REQUEST_BLUETOOTH:
-                startBleScan();
-                Log.e("onActivityResult", "REQUEST_BLUETOOTH");
-                break;
-            case REQUEST_OAUTH:
-                authInProgress = false;
-                if (resultCode == RESULT_OK) {
-                    if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
-                        mApiClient.connect();
-                    }
-                } else if (resultCode == RESULT_CANCELED) {
-                    Log.e("onActivityResult", "RESULT_CANCELED");
-                }
-                break;
-            default:
-                Log.e("onActivityResult", "problem");
+        authInProgress = false;
+        if (resultCode == RESULT_OK) {
+            if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
+                mApiClient.connect();
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            Log.e("onActivityResult", "RESULT_CANCELED");
         }
     }
 
@@ -256,7 +197,7 @@ public class StepsActivity extends FitClient {
     //Sensor de Fitness
     private void buildSensor() {
         mApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Fitness.BLE_API)
+                .addApi(Fitness.SESSIONS_API)
                 .addApi(Fitness.SENSORS_API)
                 .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
                 .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
@@ -277,22 +218,9 @@ public class StepsActivity extends FitClient {
             @Override
             public void onDataPoint(DataPoint dataPoint) {
                 for (final Field field : dataPoint.getDataType().getFields()) {
-                    final Value value = dataPoint.getValue(field);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (value.asInt() > nbStepSaveMidnight) {
-                                nbStepOfDay = value.asInt() - nbStepSaveMidnight;
-                            } else {
-                                resetStepSaveMidnight();
-                                nbStepOfDay = value.asInt();
-                            }
-                            ResetBroadcastReceiver r = ResetBroadcastReceiver.getInstance();
-                            r.saveStepSaveMidnight(getApplicationContext(), nbStepOfDay);
-                            String msj = "Pasos de hoy: " + nbStepOfDay;
-                            mBanner.setText(msj);
-                        }
-                    });
+                    pasosHoy += dataPoint.getValue(field).asInt();
+                    String msj = "Pasos de hoy: " + pasosHoy;
+                    mBanner.setText(msj);
                 }
             }
         };
@@ -307,40 +235,10 @@ public class StepsActivity extends FitClient {
                 });
     }
 
-    //BLE
-    private void startBleScan() {
-        BleScanCallback callback = new BleScanCallback() {
-            @Override
-            public void onDeviceFound(BleDevice device) {
-                claimBleDevice(device);
-            }
-
-            @Override
-            public void onScanStopped() {
-                Log.e("startBleScan", "onScanStopped");
-            }
-        };
-
-        StartBleScanRequest request = new StartBleScanRequest.Builder()
-                .setDataTypes(DATA_TYPE)
-                .setBleScanCallback(callback)
-                .build();
-
-        PendingResult<Status> pendingResult =
-                Fitness.BleApi.startBleScan(mApiClient, request);
-        pendingResult.setResultCallback(mResultCallback);
-    }
-
-    //BLE
-    private void claimBleDevice(BleDevice bleDevice) {
-        PendingResult<Status> pendingResult =
-                Fitness.BleApi.claimBleDevice(mApiClient, bleDevice);
-        pendingResult.setResultCallback(mResultCallback);
-    }
 
     private void readStepSaveMidnight() {
         sharedPrefStep = PreferenceManager.getDefaultSharedPreferences(this);
-        nbStepSaveMidnight = sharedPrefStep.getInt("THE_STEP_AT_MIDNIGHT", 0);
+        //hoy = sharedPrefStep.getDate("THE_STEP_AT_MIDNIGHT", 0);
     }
 
     private void resetStepSaveMidnight() {
@@ -349,15 +247,7 @@ public class StepsActivity extends FitClient {
     }
 
     private void resetCounter(Context context) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.add(Calendar.DAY_OF_MONTH, 1);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, new Intent(context, ResetBroadcastReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000 * 60 * 60 * 24, pi);
+
     }
 
     private void guardarPasos() {
@@ -366,7 +256,7 @@ public class StepsActivity extends FitClient {
         params.put("unidad", "Pasos");
         params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
         params.put("codigo_vitales", "7");
-        params.put("valor", String.valueOf(nbStepOfDay));
+        params.put("valor", String.valueOf(pasosHoy));
         StringRequest stringRequest = ClienteRest.subirDatos(getApplicationContext(), Request.Method.POST, url, "Registro de pasos almacenado", "Error al guardar los pasos", params);
         ClienteRest.getInstance(this).addToRequestQueue(stringRequest);
     }
