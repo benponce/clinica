@@ -52,12 +52,6 @@ public class StepsActivity extends FitClient {
 
     private OnDataPointListener onDataPointListener;
 
-    /*
-     * TODO
-     * -DELTA da la cantidad de pasos dados entre medición y medición,
-     * por lo tanto, se debe ir sumando dicha cantidad y validando la fecha
-     * en que se da la medición, para realizar el reseteo a cero.
-     */
     private final DataType DATA_TYPE = DataType.TYPE_STEP_COUNT_DELTA;
     private static final int REQUEST_OAUTH = 1;
     private static final String AUTH_PENDING = "auth_state_pending";
@@ -113,7 +107,6 @@ public class StepsActivity extends FitClient {
     public void onConnected(@Nullable Bundle bundle) {
         DataSourcesRequest dataSourceRequest = new DataSourcesRequest.Builder()
                 .setDataTypes(DATA_TYPE)
-                //.setDataSourceTypes(DATA_SOURCE)
                 .build();
 
         ResultCallback<DataSourcesResult> dataSourcesResultCallback = new ResultCallback<DataSourcesResult>() {
