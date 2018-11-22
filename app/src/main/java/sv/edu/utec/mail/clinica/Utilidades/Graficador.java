@@ -10,6 +10,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 
+import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.POJO.Lectura;
 
 public class Graficador {
@@ -18,8 +19,8 @@ public class Graficador {
     }
 
     public static LineGraphSeries<DataPoint> llenarSerie(Lectura[] lecturas, final Context context) {
-
-        DataPoint[] dataPoints = new DataPoint[lecturas.length];
+        DataPoint[] dataPoints = new DataPoint[lecturas.length + 1];
+        dataPoints[lecturas.length] = new DataPoint(lecturas.length, Control.usrPasosHoy.valor);
         int i = lecturas.length - 1;
         for (Lectura lectura : lecturas) {
             dataPoints[i] = new DataPoint(i, lectura.valor);

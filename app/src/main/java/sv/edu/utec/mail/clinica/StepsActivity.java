@@ -1,12 +1,10 @@
 package sv.edu.utec.mail.clinica;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -61,7 +59,6 @@ public class StepsActivity extends FitClient {
 
     //SharedPreferences
     private SharedPreferences sharedPrefStep;
-    public int pasosHoy;
     private Date hoy = new Date();
 
     @Override
@@ -94,8 +91,6 @@ public class StepsActivity extends FitClient {
         });
 
         buildSensor();
-        readStepSaveMidnight();
-        resetCounter(this);
         if (Control.usrPasos != null) {
             graph.addSeries(Graficador.llenarSerie(Control.usrPasos, StepsActivity.this));
         } else {
@@ -179,6 +174,8 @@ public class StepsActivity extends FitClient {
                         }
                     }
                 });
+        Control.guardarConteo(this);
+        Log.i("ONSTOP", "Se detuvo");
     }
 
     @Override
@@ -211,9 +208,7 @@ public class StepsActivity extends FitClient {
             @Override
             public void onDataPoint(DataPoint dataPoint) {
                 for (final Field field : dataPoint.getDataType().getFields()) {
-                    pasosHoy += dataPoint.getValue(field).asInt();
-                    String msj = "Pasos de hoy: " + pasosHoy;
-                    mBanner.setText(msj);
+                    actualizarPasosHoy(dataPoint.getValue(field).asInt());
                 }
             }
         };
@@ -228,19 +223,12 @@ public class StepsActivity extends FitClient {
                 });
     }
 
-
-    private void readStepSaveMidnight() {
-        sharedPrefStep = PreferenceManager.getDefaultSharedPreferences(this);
-        //hoy = sharedPrefStep.getDate("THE_STEP_AT_MIDNIGHT", 0);
-    }
-
-    private void resetStepSaveMidnight() {
-        sharedPrefStep = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPrefStep.edit().remove("THE_STEP_AT_MIDNIGHT").apply();
-    }
-
-    private void resetCounter(Context context) {
-
+    private void actualizarPasosHoy(int pasosHoy) {
+        if (Control.usrPasosHoy == null) {
+            Control.iniciarConteo(this);
+        }
+        Control.usrPasosHoy.valor += pasosHoy;
+        mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
     }
 
     private void guardarPasos() {
@@ -249,7 +237,8 @@ public class StepsActivity extends FitClient {
         params.put("unidad", "Pasos");
         params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
         params.put("codigo_vitales", "7");
-        params.put("valor", String.valueOf(pasosHoy));
+        params.put("fecha", Control.usrPasosHoy.fecha);
+        params.put("valor", String.valueOf(Control.usrPasosHoy.valor));
         StringRequest stringRequest = ClienteRest.subirDatos(getApplicationContext(), Request.Method.POST, url, "Registro de pasos almacenado", "Error al guardar los pasos", params);
         ClienteRest.getInstance(this).addToRequestQueue(stringRequest);
     }

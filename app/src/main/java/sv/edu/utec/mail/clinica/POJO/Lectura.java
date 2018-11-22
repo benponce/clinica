@@ -2,12 +2,12 @@ package sv.edu.utec.mail.clinica.POJO;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Date;
+import java.io.Serializable;
 
-public class Lectura {
+public class Lectura implements Serializable {
     @SerializedName("valor")
     public int valor;
 
     @SerializedName("fecha")
-    public Date fecha;
+    public String fecha;
 }
