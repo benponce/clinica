@@ -2,7 +2,6 @@ package sv.edu.utec.mail.clinica;
 
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -32,7 +31,6 @@ import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
 import com.jjoe64.graphview.GraphView;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
 import sv.edu.utec.mail.clinica.Red.ClienteRest;
+import sv.edu.utec.mail.clinica.Services.StepCounterService;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
 public class StepsActivity extends FitClient {
@@ -57,10 +56,6 @@ public class StepsActivity extends FitClient {
     //Cliente de la API
     private GoogleApiClient mApiClient;
 
-    //SharedPreferences
-    private SharedPreferences sharedPrefStep;
-    private Date hoy = new Date();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +65,7 @@ public class StepsActivity extends FitClient {
         }
 
         mBanner = findViewById(R.id.txtPasos);
+        mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
         graph = findViewById(R.id.graphSteps);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -176,6 +172,14 @@ public class StepsActivity extends FitClient {
                 });
         Control.guardarConteo(this);
         Log.i("ONSTOP", "Se detuvo");
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(this, StepCounterService.class);
+        startService(intent);
     }
 
     @Override
@@ -201,7 +205,7 @@ public class StepsActivity extends FitClient {
         SensorRequest request = new SensorRequest.Builder()
                 .setDataSource(dataSource)
                 .setDataType(dataType)
-                .setSamplingRate(3, TimeUnit.SECONDS)
+                .setSamplingRate(1, TimeUnit.SECONDS)
                 .build();
 
         onDataPointListener = new OnDataPointListener() {
@@ -224,9 +228,6 @@ public class StepsActivity extends FitClient {
     }
 
     private void actualizarPasosHoy(int pasosHoy) {
-        if (Control.usrPasosHoy == null) {
-            Control.iniciarConteo(this);
-        }
         Control.usrPasosHoy.valor += pasosHoy;
         mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
     }

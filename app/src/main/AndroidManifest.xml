@@ -4,8 +4,6 @@
     package="sv.edu.utec.mail.clinica">
 
     <!-- Sincronización con el servidor -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- BLE -->
@@ -22,7 +20,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Requisitos de hardware -->
-    <!--     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/> -->
+    <!-- <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/> -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -46,51 +44,16 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".HRActivity" />
         <activity android:name=".CitaActivity" />
-        <!-- Servicios para sincronización en segundo plano -->
-        <service
-            android:name="com.evernote.android.job.v21.PlatformJobService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service
-            android:name="com.evernote.android.job.v14.PlatformAlarmService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service
-            android:name="com.evernote.android.job.v14.PlatformAlarmServiceExact"
-            android:exported="false" />
 
-        <receiver
-            android:name="com.evernote.android.job.v14.PlatformAlarmReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.evernote.android.job.v14.RUN_JOB" />
-                <action android:name="net.vrallev.android.job.v14.RUN_JOB" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name="com.evernote.android.job.gcm.PlatformGcmService"
-            tools:node="remove" />
-
-        <receiver
-            android:name="com.evernote.android.job.JobBootReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name="com.evernote.android.job.JobRescheduleService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".Services.StepCounterService"
-            android:enabled="false"
-            android:exported="false"></service>
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".Services.StepSyncService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
     </application>
 
 </manifest>

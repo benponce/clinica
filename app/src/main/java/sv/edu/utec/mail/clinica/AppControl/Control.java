@@ -1,11 +1,13 @@
 package sv.edu.utec.mail.clinica.AppControl;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.evernote.android.job.JobRequest;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
@@ -14,13 +16,13 @@ import java.util.GregorianCalendar;
 
 import sv.edu.utec.mail.clinica.CitaActivity;
 import sv.edu.utec.mail.clinica.HRActivity;
-import sv.edu.utec.mail.clinica.Jobs.StepsSyncJob;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
 import sv.edu.utec.mail.clinica.POJO.Citas;
 import sv.edu.utec.mail.clinica.POJO.Lectura;
 import sv.edu.utec.mail.clinica.POJO.Usuario;
 import sv.edu.utec.mail.clinica.PerfilActivity;
+import sv.edu.utec.mail.clinica.Services.StepSyncService;
 import sv.edu.utec.mail.clinica.StepsActivity;
 
 public class Control {
@@ -100,11 +102,26 @@ public class Control {
     }
 
     public static void guardarConteo(Context context) {
+        String fechaHoy = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
         Gson gson = new Gson();
         SharedPreferences sp = context.getSharedPreferences("clinica", 0);
+        String programar = sp.getString("SubidaProgramada", "0");
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("PasosHoy", gson.toJson(usrPasosHoy));
         editor.commit();
+
+        Log.i("PROGRAMAR_ACT", "Hoy: " + fechaHoy + " - " + usrPasosHoy.fecha + ", Programada: " + programar);
+        if (!fechaHoy.equals(usrPasosHoy.fecha)) {
+            programarActualizacionPasos(context);
+            editor.putString("SubidaProgramada", "1");
+            editor.commit();
+        } else {
+            if (programar.equals("0")) {
+                programarActualizacionPasos(context);
+                editor.putString("SubidaProgramada", "1");
+                editor.commit();
+            }
+        }
     }
 
     public static long todayMillis() {
@@ -117,23 +134,26 @@ public class Control {
         return cal.getTimeInMillis();
     }
 
-    public static void guardarPasos() {
+    public static void programarActualizacionPasos(Context context) {
         //Colocar a las 0 horas
         Calendar cal = new GregorianCalendar();
+        long currentMillis = cal.getTimeInMillis();
         cal.setTimeInMillis(todayMillis());
-        //10 pm
-        cal.add(Calendar.HOUR, 21);
-        long ini = cal.getTimeInMillis();
-        //6 am
-        cal.add(Calendar.HOUR, 8);
-        long fin = cal.getTimeInMillis();
 
-        new JobRequest.Builder(StepsSyncJob.TAG)
-                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
-                .setExecutionWindow(ini, fin)
-                .build()
-                .schedule();
+        cal.add(Calendar.HOUR, 21);//9 pm
+        long ini = Math.max(1000, cal.getTimeInMillis() - currentMillis);
 
+        cal.add(Calendar.HOUR, 9);//6 am
+        long fin = Math.max(1000, cal.getTimeInMillis() - ini);
+
+        JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(context, StepSyncService.class))
+                .setMinimumLatency(ini)
+                .setOverrideDeadline(fin)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setPersisted(true);
+        JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        jobScheduler.schedule(builder.build());
+        Log.i("PROGRAMAR_ACT", "Tarea programada");
     }
 
 }

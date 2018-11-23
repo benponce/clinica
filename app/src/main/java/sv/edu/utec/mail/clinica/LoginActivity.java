@@ -30,8 +30,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        mUserId= findViewById(R.id.txtUser);
-        mPassword= findViewById(R.id.txtPwd);
+        mUserId = findViewById(R.id.txtUser);
+        mPassword = findViewById(R.id.txtPwd);
         mLogin = findViewById(R.id.btnLogin);
 
         mLogin.setOnClickListener(new View.OnClickListener() {
@@ -41,22 +41,22 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        try{
+        try {
             Gson gson = new Gson();
-            SharedPreferences settings = getSharedPreferences("clinica",0);
+            SharedPreferences settings = getSharedPreferences("clinica", 0);
             Control.sysUsr = gson.fromJson(settings.getString("Usuario", ""), Usuario.class);
             if (Control.sysUsr != null) {
                 redireccionar();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d("Login", "No registrado");
         }
     }
 
-    private void ingresar(){
-        String usr= mUserId.getText().toString();
+    private void ingresar() {
+        String usr = mUserId.getText().toString();
         String pdw = mPassword.getText().toString();
-        String url= ClienteRest.getLoginUrl()+usr+'/'+pdw;
+        String url = ClienteRest.getLoginUrl() + usr + '/' + pdw;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -83,14 +83,14 @@ public class LoginActivity extends AppCompatActivity {
         ClienteRest.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
 
-    private void guardarIngreso(JSONObject response){
-        SharedPreferences sp = getSharedPreferences("clinica",0);
-        SharedPreferences.Editor editor= sp.edit();
-        editor.putString("Usuario",response.toString());
+    private void guardarIngreso(JSONObject response) {
+        SharedPreferences sp = getSharedPreferences("clinica", 0);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("Usuario", response.toString());
         editor.commit();
     }
 
-    private void redireccionar(){
+    private void redireccionar() {
         Control.RedirectMain(this);
     }
 }
