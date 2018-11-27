@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import sv.edu.utec.mail.clinica.CitaActivity;
 import sv.edu.utec.mail.clinica.HRActivity;
@@ -91,47 +92,49 @@ public class Control {
             usrPasosHoy = gson.fromJson(settings.getString("PasosHoy", ""), Lectura.class);
             Log.i("CARGA_PASOS", usrPasosHoy.valor + "");
         } catch (Exception e) {
-            Calendar cal = new GregorianCalendar();
-            cal.setTimeInMillis(Control.todayMillis());
-            String fechaHoy = new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
             usrPasosHoy = new Lectura();
-            usrPasosHoy.fecha = fechaHoy;
+            usrPasosHoy.fecha = getFechaActual();
             usrPasosHoy.valor = 0;
             Log.d("PasosHoy", e.getMessage());
         }
     }
 
     public static void guardarConteo(Context context) {
-        String fechaHoy = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
         Gson gson = new Gson();
         SharedPreferences sp = context.getSharedPreferences("clinica", 0);
         String programar = sp.getString("SubidaProgramada", "0");
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("PasosHoy", gson.toJson(usrPasosHoy));
-        editor.commit();
 
-        Log.i("PROGRAMAR_ACT", "Hoy: " + fechaHoy + " - " + usrPasosHoy.fecha + ", Programada: " + programar);
-        if (!fechaHoy.equals(usrPasosHoy.fecha)) {
-            programarActualizacionPasos(context);
-            editor.putString("SubidaProgramada", "1");
-            editor.commit();
-        } else {
+        if (!getFechaActual().equals(usrPasosHoy.fecha)) {
             if (programar.equals("0")) {
                 programarActualizacionPasos(context);
                 editor.putString("SubidaProgramada", "1");
-                editor.commit();
+            }
+        } else {
+            if (!programar.equals("1")) {
+                programarActualizacionPasos(context);
+                editor.putString("SubidaProgramada", "1");
             }
         }
+        editor.commit();
     }
 
     public static long todayMillis() {
         //Colocar a las 0 horas
         Calendar cal = new GregorianCalendar();
+        cal.setTimeZone(TimeZone.getDefault());
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis();
+    }
+
+    public static String getFechaActual() {
+        Calendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(Control.todayMillis());
+        return new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
     }
 
     public static void programarActualizacionPasos(Context context) {

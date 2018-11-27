@@ -10,6 +10,10 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.POJO.Lectura;
 
@@ -33,7 +37,7 @@ public class Graficador {
         series.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
-                String y = new Double(dataPoint.getY()).toString();
+                String y = String.valueOf(Math.floor(dataPoint.getY()));
                 Toast.makeText(context, y + " pasos", Toast.LENGTH_SHORT).show();
 
             }
@@ -48,5 +52,20 @@ public class Graficador {
         });
         series.setColor(Color.RED);
         return series;
+    }
+
+    public static String[] getEtiquetas(int quantity) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(Control.todayMillis());
+        cal.add(Calendar.DAY_OF_MONTH, (-1 * quantity));
+        SimpleDateFormat sp = new SimpleDateFormat("dd-MM");
+        String[] etiquetas = new String[8];
+        for (int i = 0; i < 8; i++) {
+            etiquetas[i] = sp.format(cal.getTime());
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        etiquetas[quantity - 1] = "Hoy";
+
+        return etiquetas;
     }
 }

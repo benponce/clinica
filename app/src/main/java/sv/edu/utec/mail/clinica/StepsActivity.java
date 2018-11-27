@@ -7,13 +7,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -30,14 +26,12 @@ import com.google.android.gms.fitness.request.OnDataPointListener;
 import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.result.DataSourcesResult;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
-import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Services.StepCounterService;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
@@ -45,11 +39,11 @@ public class StepsActivity extends FitClient {
 
     TextView mBanner;
     GraphView graph;
-    Button mTmpGuardar;
 
     private OnDataPointListener onDataPointListener;
 
     private final DataType DATA_TYPE = DataType.TYPE_STEP_COUNT_DELTA;
+    private int mCount;
     private static final int REQUEST_OAUTH = 1;
     private static final String AUTH_PENDING = "auth_state_pending";
     private boolean authInProgress = false;
@@ -69,25 +63,21 @@ public class StepsActivity extends FitClient {
         graph = findViewById(R.id.graphSteps);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(10);
+        graph.getViewport().setMaxX(8);
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(10000);
+
         graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
         graph.addSeries(Graficador.lineaMeta());
         graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
         graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
-
-        mTmpGuardar = findViewById(R.id.tmpGuardar);
-        mTmpGuardar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                guardarPasos();
-            }
-        });
-
+        mCount = Control.usrPasosHoy.valor;
         buildSensor();
         if (Control.usrPasos != null) {
+            StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
+            staticLabelsFormatter.setHorizontalLabels(Graficador.getEtiquetas(Control.usrPasos.length));
+            graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
             graph.addSeries(Graficador.llenarSerie(Control.usrPasos, StepsActivity.this));
         } else {
             Toast.makeText(this, "No tienes registro de pasos", Toast.LENGTH_LONG).show();
@@ -172,12 +162,6 @@ public class StepsActivity extends FitClient {
                 });
         Control.guardarConteo(this);
         Log.i("ONSTOP", "Se detuvo");
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
         Intent intent = new Intent(this, StepCounterService.class);
         startService(intent);
     }
@@ -191,7 +175,7 @@ public class StepsActivity extends FitClient {
     //Sensor de Fitness
     private void buildSensor() {
         mApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Fitness.SESSIONS_API)
+                .addApi(Fitness.HISTORY_API)
                 .addApi(Fitness.SENSORS_API)
                 .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
                 .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
@@ -205,14 +189,15 @@ public class StepsActivity extends FitClient {
         SensorRequest request = new SensorRequest.Builder()
                 .setDataSource(dataSource)
                 .setDataType(dataType)
-                .setSamplingRate(1, TimeUnit.SECONDS)
+                .setSamplingRate(3, TimeUnit.SECONDS)
                 .build();
 
         onDataPointListener = new OnDataPointListener() {
             @Override
             public void onDataPoint(DataPoint dataPoint) {
                 for (final Field field : dataPoint.getDataType().getFields()) {
-                    actualizarPasosHoy(dataPoint.getValue(field).asInt());
+                    mCount += dataPoint.getValue(field).asInt();
+                    mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
                 }
             }
         };
@@ -226,22 +211,4 @@ public class StepsActivity extends FitClient {
                     }
                 });
     }
-
-    private void actualizarPasosHoy(int pasosHoy) {
-        Control.usrPasosHoy.valor += pasosHoy;
-        mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
-    }
-
-    private void guardarPasos() {
-        String url = ClienteRest.getRegistroVitalesUrl();
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("unidad", "Pasos");
-        params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
-        params.put("codigo_vitales", "7");
-        params.put("fecha", Control.usrPasosHoy.fecha);
-        params.put("valor", String.valueOf(Control.usrPasosHoy.valor));
-        StringRequest stringRequest = ClienteRest.subirDatos(getApplicationContext(), Request.Method.POST, url, "Registro de pasos almacenado", "Error al guardar los pasos", params);
-        ClienteRest.getInstance(this).addToRequestQueue(stringRequest);
-    }
-
 }

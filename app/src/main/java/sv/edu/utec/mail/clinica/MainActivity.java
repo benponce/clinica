@@ -1,13 +1,16 @@
 package sv.edu.utec.mail.clinica;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Red.Sincro;
+import sv.edu.utec.mail.clinica.Services.StepCounterService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         mBanner = findViewById(R.id.txtBanner);
         mLogout = findViewById(R.id.ibnLogout);
         mLogout.setOnClickListener(new View.OnClickListener() {
@@ -59,18 +63,25 @@ public class MainActivity extends AppCompatActivity {
                 Control.Perfil(MainActivity.this);
             }
         });
-        bienvenida();
-        Control.iniciarConteo(this);
+        preparar();
+    }
+
+    private void preparar() {
+        String msj = "Bienvenido: " + Control.sysUsr.firstName + " " + Control.sysUsr.lastName;
+        mBanner.setText(msj);
         Control.readOffLine(this);
         if (DESCARGAR || Control.usrCitas == null || Control.usrPasos == null) {
             descargarDatos();
             DESCARGAR = false;
         }
-    }
+        Control.iniciarConteo(this);
+        try {
+            Intent intent = new Intent(this, StepCounterService.class);
+            startService(intent);
+        } catch (Exception e) {
+            Log.e("INVOCAR_SERVICIO", e.getMessage());
+        }
 
-    private void bienvenida() {
-        String msj = "Bienvenido: " + Control.sysUsr.firstName.toString() + " " + Control.sysUsr.lastName.toString();
-        mBanner.setText(msj);
     }
 
     private void descargarDatos() {
@@ -78,8 +89,10 @@ public class MainActivity extends AppCompatActivity {
         Sincro.getInstance(this).downloadCitas();
     }
 
+
     @Override
     public void onBackPressed() {
         this.moveTaskToBack(true);
     }
+
 }

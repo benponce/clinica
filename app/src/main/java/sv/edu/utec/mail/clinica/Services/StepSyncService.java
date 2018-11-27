@@ -85,12 +85,16 @@ public class StepSyncService extends JobService {
     }
 
     private void reiniciarConteo() {
-        String fechaHoy = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
         SharedPreferences sp = getSharedPreferences("clinica", 0);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("PasosHoy", "");
+        editor.commit();
+        //
+        String fechaHoy = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
         if (!fechaHoy.equals(mPasos.fecha)) {
             editor.putString("SubidaProgramada", "0");
+        } else {
+            editor.putString("SubidaProgramada", "2");
         }
         editor.commit();
     }
