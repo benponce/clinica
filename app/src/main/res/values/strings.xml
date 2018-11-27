@@ -7,4 +7,27 @@
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="title_activity_cita">CitaActivity</string>
+
+    <string name="material_calendar_monday">Lun</string>
+    <string name="material_calendar_tuesday">Mar</string>
+    <string name="material_calendar_wednesday">Mie</string>
+    <string name="material_calendar_thursday">Jue</string>
+    <string name="material_calendar_friday">Vie</string>
+    <string name="material_calendar_saturday">Sab</string>
+    <string name="material_calendar_sunday">Dom</string>
+
+    <array name="material_calendar_months_array">
+        <item>Enero</item>
+        <item>Febrero</item>
+        <item>Marzo</item>
+        <item>Abril</item>
+        <item>Mayo</item>
+        <item>Junio</item>
+        <item>Julio</item>
+        <item>Agosto</item>
+        <item>Septiembre</item>
+        <item>Octubre</item>
+        <item>Noviembre</item>
+        <item>Diciembre</item>
+    </array>
 </resources>
