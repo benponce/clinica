@@ -16,7 +16,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import sv.edu.utec.mail.clinica.CitaActivity;
-import sv.edu.utec.mail.clinica.HRActivity;
+import sv.edu.utec.mail.clinica.HRConActivity;
 import sv.edu.utec.mail.clinica.LoginActivity;
 import sv.edu.utec.mail.clinica.MainActivity;
 import sv.edu.utec.mail.clinica.POJO.Citas;
@@ -65,7 +65,7 @@ public class Control {
 
     public static void HR(Context context) {
         //Abrir PerfilActivity
-        context.startActivity(new Intent(context, HRActivity.class));
+        context.startActivity(new Intent(context, HRConActivity.class));
     }
 
     public static void readOffLine(Context context) {
