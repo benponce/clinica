@@ -2,7 +2,6 @@ package sv.edu.utec.mail.clinica;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -13,22 +12,27 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class HRConActivity extends ListActivity {
+public class HRConActivity extends AppCompatActivity {
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
+    private ListView mLisview;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private final int PERMISO_LOCATION = 787;
@@ -38,18 +42,22 @@ public class HRConActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActionBar().setTitle("Seleccionar dispositivo");
+        setContentView(R.layout.activity_hr_con);
+        mLisview = findViewById(R.id.listDevices);
+        mLisview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                listItemClick(position);
+            }
+        });
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISO_LOCATION);
+        }
         mHandler = new Handler();
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "El dispositivo no posee soporte BLE.", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISO_LOCATION);
         }
     }
 
@@ -57,9 +65,14 @@ public class HRConActivity extends ListActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISO_LOCATION) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Esta aplicación necesita conocer tu ubicación para funcionar.", Toast.LENGTH_LONG).show();
-                finish();
+            boolean todos = true;
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    todos = false;
+                }
+            }
+            if (!todos) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISO_LOCATION);
             }
         }
     }
@@ -72,7 +85,7 @@ public class HRConActivity extends ListActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
         mLeDeviceListAdapter = new LeDeviceListAdapter();
-        setListAdapter(mLeDeviceListAdapter);
+        mLisview.setAdapter(mLeDeviceListAdapter);
         scanLeDevice(true);
     }
 
@@ -92,9 +105,6 @@ public class HRConActivity extends ListActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    //TODO encontrar el método que abre la siguiente activity
-    //TODO forzar la lectura de la característica del HR
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_escaneo, menu);
@@ -109,6 +119,20 @@ public class HRConActivity extends ListActivity {
         }
         return true;
     }
+
+
+    protected void listItemClick(int position) {
+        final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
+        if (device == null) return;
+        final Intent intent = new Intent(this, HRMedirActivity.class);
+        intent.putExtra(HRMedirActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        if (mScanning) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mScanning = false;
+        }
+        startActivity(intent);
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

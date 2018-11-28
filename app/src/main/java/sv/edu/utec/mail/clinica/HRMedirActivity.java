@@ -1,7 +1,7 @@
 package sv.edu.utec.mail.clinica;
 
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,14 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
+import java.util.List;
 import sv.edu.utec.mail.clinica.Services.BluetoothLeService;
 
 public class HRMedirActivity extends AppCompatActivity {
@@ -30,13 +28,17 @@ public class HRMedirActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private TextView mDataField;
+    private Button mMedir;
+    private Button mGuardar;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
-            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    public static String HEART_RATE_SERVICE="00000af0-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_MEASUREMENT = "00000af2-0000-1000-8000-00805f9b34fb";
+    BluetoothGattCharacteristic CHAR_HEART_RATE;
     private boolean mConnected = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
 
+    //Conexión al servicio BLE
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -61,11 +63,15 @@ public class HRMedirActivity extends AppCompatActivity {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
+                updateConnectionState("Conectado");
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
+                updateConnectionState("Desconectado");
                 invalidateOptionsMenu();
                 clearUI();
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                displayGattServices(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
@@ -76,44 +82,55 @@ public class HRMedirActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hr_med);
+
         final Intent intent = getIntent();
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-        mDataField = (TextView) findViewById(R.id.txtHRData);
 
-        getActionBar().setTitle("Lectura de Ritmo Cardiaco");
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        Log.d(TAG,mDeviceAddress);
+
+        mDataField = (TextView) findViewById(R.id.txtHRData);
+        mMedir = (Button) findViewById(R.id.btnMedir);
+        mMedir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                leer();
+            }
+        });
+        mGuardar = (Button) findViewById(R.id.btnGuardar);
+        mGuardar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                guardar();
+            }
+        });
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
 
     private void leer() {
-        if (mGattCharacteristics != null) {
-            final BluetoothGattCharacteristic characteristic =
-                    mGattCharacteristics.get(groupPosition).get(childPosition);
-            //<added>
-            BluetoothGattDescriptor descriptor =
-                    characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            //</added>
-            final int charaProp = characteristic.getProperties();
-            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                if (mNotifyCharacteristic != null) {
-                    mBluetoothLeService.setCharacteristicNotification(
-                            mNotifyCharacteristic, false);
-                    mNotifyCharacteristic = null;
-                }
-                mBluetoothLeService.readCharacteristic(characteristic);
+        final int charaProp = CHAR_HEART_RATE.getProperties();
+        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+            if (mNotifyCharacteristic != null) {
+                mBluetoothLeService.setCharacteristicNotification(
+                        mNotifyCharacteristic, false);
+                mNotifyCharacteristic = null;
             }
-            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                mNotifyCharacteristic = characteristic;
-                mBluetoothLeService.setCharacteristicNotification(characteristic, true);
-            }
+            mBluetoothLeService.readCharacteristic(CHAR_HEART_RATE);
+        }
+        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+            mNotifyCharacteristic = CHAR_HEART_RATE;
+            mBluetoothLeService.setCharacteristicNotification(CHAR_HEART_RATE, true);
+        }
+    }
+
+    private void guardar() {
+        if (!mDataField.getText().equals("0")) {
+            Toast.makeText(this, "Esperame...", Toast.LENGTH_LONG).show();
         }
     }
 
     private void clearUI() {
         mDataField.setText(0);
-
     }
 
     @Override
@@ -122,7 +139,7 @@ public class HRMedirActivity extends AppCompatActivity {
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
+            Log.d(TAG, "Resultado: " + result);
         }
     }
 
@@ -168,11 +185,11 @@ public class HRMedirActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateConnectionState(final int resourceId) {
+    private void updateConnectionState(final String msj) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(HRMedirActivity.this,resourceId,Toast.LENGTH_LONG);
+                Toast.makeText(HRMedirActivity.this, msj, Toast.LENGTH_LONG);
             }
         });
     }
@@ -182,6 +199,31 @@ public class HRMedirActivity extends AppCompatActivity {
             mDataField.setText(data);
         }
     }
+
+    private void displayGattServices(List<BluetoothGattService> gattServices) {
+        Log.d(TAG,"Sí los registra");
+        if (gattServices == null) return;
+
+        BluetoothGattService mGattService = null;
+        for (BluetoothGattService gattService : gattServices) {
+            if (gattService.getUuid().toString().equals(HEART_RATE_SERVICE)) {
+                Log.d(TAG,"registró el servicio");
+                mGattService = gattService;
+                break;
+            }
+        }
+        if (mGattService != null) {
+            for (BluetoothGattCharacteristic gattCharacteristic : mGattService.getCharacteristics()) {
+                if (gattCharacteristic.getUuid().toString().equals(HEART_RATE_MEASUREMENT)) {
+                    Log.d(TAG,"registró el la caracteristica");
+                    CHAR_HEART_RATE = gattCharacteristic;
+                    break;
+                }
+            }
+        }
+    }
+
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);

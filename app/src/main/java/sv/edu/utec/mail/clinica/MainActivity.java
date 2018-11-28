@@ -1,12 +1,18 @@
 package sv.edu.utec.mail.clinica;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Red.Sincro;
@@ -14,13 +20,19 @@ import sv.edu.utec.mail.clinica.Services.StepCounterService;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String[] PERMISOS=new String[]{
+            Manifest.permission.WRITE_CALENDAR,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+    public final int PERMISSION_REQ=1101;
     private boolean DESCARGAR = true;
     private TextView mBanner;
-    private ImageView mLogout;
-    private ImageView mHeartRate;
-    private ImageView mCitas;
-    private ImageView mSteps;
-    private ImageView mConfig;
+    private LinearLayout mLogout;
+    private LinearLayout mHeartRate;
+    private LinearLayout mCitas;
+    private LinearLayout mSteps;
+    private LinearLayout mConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 Control.Perfil(MainActivity.this);
             }
         });
+        revisarPermisos();
         preparar();
     }
 
@@ -89,6 +102,31 @@ public class MainActivity extends AppCompatActivity {
         Sincro.getInstance(this).downloadCitas();
     }
 
+    private void revisarPermisos(){
+        if (ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED||
+                ActivityCompat.checkSelfPermission(this, PERMISOS[1]) != PackageManager.PERMISSION_GRANTED||
+                ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQ) {
+            boolean allGranted = true;
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (!allGranted) {
+                ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
+                Toast.makeText(this, "Posiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     @Override
     public void onBackPressed() {

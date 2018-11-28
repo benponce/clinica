@@ -26,11 +26,12 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
-    private int mConnectionState = STATE_DISCONNECTED;
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+
+    private int mConnectionState = STATE_DISCONNECTED;
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -43,8 +44,10 @@ public class BluetoothLeService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
-    public final static UUID UUID_HEART_RATE_MEASUREMENT =
-            UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
+    public static String HEART_RATE_SERVICE = "00000af0-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_MEASUREMENT = "00000af2-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_CONTROL = "00000af7-0000-1000-8000-00805f9b34fb";
+    public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
@@ -89,6 +92,14 @@ public class BluetoothLeService extends Service {
                                             BluetoothGattCharacteristic characteristic) {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            BluetoothGattCharacteristic characteristic = gatt.getService(UUID.fromString(HEART_RATE_SERVICE))
+                    .getCharacteristic(UUID.fromString(HEART_RATE_CONTROL));
+            characteristic.setValue(new byte[]{1, 1});
+            gatt.writeCharacteristic(characteristic);
+        }
     };
 
     private void broadcastUpdate(final String action) {
@@ -99,8 +110,7 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
+        /*if (HEART_RATE_MEASUREMENT.equals(characteristic.getUuid().toString())) {
             int flag = characteristic.getProperties();
             int format = -1;
             if ((flag & 0x01) != 0) {
@@ -113,7 +123,16 @@ public class BluetoothLeService extends Service {
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
-        }
+        } else {*/
+            final byte[] data = characteristic.getValue();
+            if (data != null && data.length > 0) {
+                final StringBuilder stringBuilder = new StringBuilder(data.length);
+                for(byte byteChar : data)
+                    stringBuilder.append(String.format("%02X ", byteChar));
+                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
+                Log.d(TAG, String.format("Datos Reibidos: "+ stringBuilder.toString()));
+            }
+        //}
         sendBroadcast(intent);
     }
 
@@ -211,9 +230,9 @@ public class BluetoothLeService extends Service {
         }
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
+        if (HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+                    UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBluetoothGatt.writeDescriptor(descriptor);
         }
