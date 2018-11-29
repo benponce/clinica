@@ -35,7 +35,7 @@ public class Sincro {
         return mInstance;
     }
 
-    public void downloadPasos() {
+    public void downloadPasos(final SincroCallback sincroCallback) {
         String url = ClienteRest.getPasosUrl() + Control.sysUsr.paciente;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
@@ -50,6 +50,7 @@ public class Sincro {
                             SharedPreferences.Editor editor = sp.edit();
                             editor.putString("Pasos", strPasos);
                             editor.commit();
+                            sincroCallback.setVisibility();
                         } catch (Exception e) {
                             Log.d("Descarga de Pasos", e.getMessage());
                         }
@@ -70,7 +71,7 @@ public class Sincro {
         ClienteRest.getInstance(ctx).addToRequestQueue(jsonObjectRequest);
     }
 
-    public void downloadCitas() {
+    public void downloadCitas(final SincroCallback sincroCallback) {
         String url = ClienteRest.getCitasUrl() + Control.sysUsr.paciente;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -96,6 +97,7 @@ public class Sincro {
                             Gson gson = new Gson();
                             SharedPreferences settings = ctx.getSharedPreferences("clinica", 0);
                             Control.usrCitas = gson.fromJson(settings.getString("Citas", ""), Citas[].class);
+                            sincroCallback.setVisibility();
                         } catch (Exception e) {
                             Log.d("Lectura de Citas", error.getMessage());
                         }
@@ -103,6 +105,10 @@ public class Sincro {
                     }
                 });
         ClienteRest.getInstance(ctx).addToRequestQueue(jsonObjectRequest);
+    }
+
+    public interface SincroCallback {
+        void setVisibility();
     }
 
 }

@@ -9,8 +9,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,12 +20,8 @@ import sv.edu.utec.mail.clinica.Services.StepCounterService;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String[] PERMISOS=new String[]{
-            Manifest.permission.WRITE_CALENDAR,
-            Manifest.permission.READ_CALENDAR,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-    };
-    public final int PERMISSION_REQ=1101;
+    public final int PERMISSION_REQ = 1101;
+    public ProgressBar mPrgDescarga;
     private boolean DESCARGAR = true;
     private TextView mBanner;
     private LinearLayout mLogout;
@@ -33,6 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mCitas;
     private LinearLayout mSteps;
     private LinearLayout mConfig;
+    public int progreso;
+    private String[] PERMISOS = new String[]{
+            Manifest.permission.WRITE_CALENDAR,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,41 +42,42 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mBanner = findViewById(R.id.txtBanner);
-        mLogout = findViewById(R.id.ibnLogout);
+        mLogout = findViewById(R.id.optLogout);
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Control.Salir(MainActivity.this);
             }
         });
-        mHeartRate = findViewById(R.id.ibnHeartRate);
+        mHeartRate = findViewById(R.id.optHeartRate);
         mHeartRate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Control.HR(MainActivity.this);
             }
         });
-        mCitas = findViewById(R.id.ibnCitas);
+        mCitas = findViewById(R.id.optCitas);
         mCitas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Control.Citas(MainActivity.this);
             }
         });
-        mSteps = findViewById(R.id.ibnStep);
+        mSteps = findViewById(R.id.optStep);
         mSteps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Control.Pasos(MainActivity.this);
             }
         });
-        mConfig = findViewById(R.id.ibnConfig);
+        mConfig = findViewById(R.id.optConfig);
         mConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Control.Perfil(MainActivity.this);
             }
         });
+        mPrgDescarga = findViewById(R.id.pb_dnload);
         revisarPermisos();
         preparar();
     }
@@ -98,14 +101,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void descargarDatos() {
-        Sincro.getInstance(this).downloadPasos();
-        Sincro.getInstance(this).downloadCitas();
+        progreso = 0;
+        Sincro.SincroCallback sincroCallback = new Sincro.SincroCallback() {
+            @Override
+            public void setVisibility() {
+                progreso += 1;
+                Log.i("SINCRO", "" + progreso);
+                if (progreso == 2) {
+                    mPrgDescarga.setVisibility(View.INVISIBLE);
+                }
+            }
+        };
+        Sincro.getInstance(this).downloadPasos(sincroCallback);
+        Sincro.getInstance(this).downloadCitas(sincroCallback);
     }
 
-    private void revisarPermisos(){
-        if (ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED||
-                ActivityCompat.checkSelfPermission(this, PERMISOS[1]) != PackageManager.PERMISSION_GRANTED||
-                ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED){
+    private void revisarPermisos() {
+        if (ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, PERMISOS[1]) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
         }
     }

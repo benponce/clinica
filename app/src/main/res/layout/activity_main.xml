@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="#fafafa"
     android:orientation="vertical"
-    android:padding="20dp"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -15,7 +14,7 @@
         android:layout_height="wrap_content"
         android:gravity="fill_horizontal"
         android:orientation="horizontal"
-        android:padding="5dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/txtBanner"
@@ -39,13 +38,20 @@
 
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+
     <LinearLayout
-        android:id="@+id/ibnConfig"
+        android:id="@+id/optConfig"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_selector"
         android:clickable="true"
-        android:orientation="horizontal">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <ImageView
             android:layout_width="50dp"
@@ -64,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:text="Cuenta"
                 android:textColor="#003366"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -72,16 +78,24 @@
                 android:layout_height="wrap_content"
                 android:text="Contiene información del usuario y la opción para cambiar la contraseña."
                 android:textColor="#0a9de1"
-                android:textSize="12dp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+
     <LinearLayout
+        android:id="@+id/optCitas"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_selector"
         android:clickable="true"
-        android:orientation="horizontal">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <ImageView
             android:layout_width="50dp"
@@ -91,7 +105,6 @@
             app:srcCompat="@drawable/ic_action_citas" />
 
         <LinearLayout
-            android:id="@+id/ibnCitas"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -101,7 +114,7 @@
                 android:layout_height="wrap_content"
                 android:text="Citas"
                 android:textColor="#003366"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -109,16 +122,25 @@
                 android:layout_height="wrap_content"
                 android:text="Obtenga información de sus citas médicas programadas."
                 android:textColor="#0a9de1"
-                android:textSize="12dp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+    />
+
     <LinearLayout
+        android:id="@+id/optStep"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_selector"
         android:clickable="true"
-        android:orientation="horizontal">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <ImageView
             android:layout_width="50dp"
@@ -128,7 +150,6 @@
             app:srcCompat="@drawable/ic_action_step" />
 
         <LinearLayout
-            android:id="@+id/ibnStep"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -138,7 +159,7 @@
                 android:layout_height="wrap_content"
                 android:text="Contador de pasos"
                 android:textColor="#003366"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -146,17 +167,25 @@
                 android:layout_height="wrap_content"
                 android:text="Observe el progreso de su conteo de pasos de la última semana."
                 android:textColor="#0a9de1"
-                android:textSize="12dp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+    />
+
     <LinearLayout
-        android:id="@+id/ibnHeartRate"
+        android:id="@+id/optHeartRate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_selector"
         android:clickable="true"
-        android:orientation="horizontal">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <ImageView
             android:layout_width="50dp"
@@ -175,24 +204,33 @@
                 android:layout_height="wrap_content"
                 android:text="Ritmo cardiaco"
                 android:textColor="#003366"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Medidor de ritmo cardiaco (requiere de un medidor compatible)."
+                android:text="Medidor de ritmo cardiaco (requiere de un dispositivo compatible)."
                 android:textColor="#0a9de1"
-                android:textSize="12dp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+    />
+
     <LinearLayout
+        android:id="@+id/optLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_selector"
         android:clickable="true"
-        android:orientation="horizontal">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <ImageView
             android:layout_width="50dp"
@@ -202,7 +240,6 @@
             app:srcCompat="@drawable/ic_action_logout" />
 
         <LinearLayout
-            android:id="@+id/ibnLogout"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -212,7 +249,7 @@
                 android:layout_height="wrap_content"
                 android:text="Cerrar sesión"
                 android:textColor="#003366"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -220,8 +257,12 @@
                 android:layout_height="wrap_content"
                 android:text="Cerrar su sesión. El contador de pasos se detendrá."
                 android:textColor="#0a9de1"
-                android:textSize="12dp" />
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
 </LinearLayout>
