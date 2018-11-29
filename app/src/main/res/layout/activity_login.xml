@@ -55,9 +55,9 @@
         android:layout_marginTop="300dp"
         android:background="@drawable/button_shape"
         android:fontFamily="sans-serif"
-        android:text="Ingresar"
         android:textAlignment="center"
         android:textColor="@drawable/button_text_color"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:text="Ingresar" />
 
 </RelativeLayout>

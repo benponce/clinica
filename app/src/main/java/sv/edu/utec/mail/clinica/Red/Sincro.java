@@ -51,7 +51,9 @@ public class Sincro {
                             editor.putString("Pasos", strPasos);
                             editor.commit();
                             sincroCallback.setVisibility();
+
                         } catch (Exception e) {
+                            sincroCallback.setVisibility();
                             Log.d("Descarga de Pasos", e.getMessage());
                         }
                     }
@@ -86,7 +88,9 @@ public class Sincro {
                                 editor.putString("Citas", strCitas);
                                 editor.commit();
                             }
+                            sincroCallback.setVisibility();
                         } catch (Exception e) {
+                            sincroCallback.setVisibility();
                             Log.d("Descarga de Citas", e.getMessage());
                         }
                     }
@@ -97,7 +101,6 @@ public class Sincro {
                             Gson gson = new Gson();
                             SharedPreferences settings = ctx.getSharedPreferences("clinica", 0);
                             Control.usrCitas = gson.fromJson(settings.getString("Citas", ""), Citas[].class);
-                            sincroCallback.setVisibility();
                         } catch (Exception e) {
                             Log.d("Lectura de Citas", error.getMessage());
                         }

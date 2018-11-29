@@ -33,7 +33,7 @@ public class Graficador {
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         series.setDrawDataPoints(true);
         series.setDataPointsRadius(10);
-        series.setColor(Color.argb(255, 16, 64, 128));
+        series.setColor(Color.rgb(0,51,102));
         series.setOnDataPointTapListener(new OnDataPointTapListener() {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
@@ -59,13 +59,11 @@ public class Graficador {
         cal.setTimeInMillis(Control.todayMillis());
         cal.add(Calendar.DAY_OF_MONTH, (-1 * quantity));
         SimpleDateFormat sp = new SimpleDateFormat("dd-MM");
-        String[] etiquetas = new String[8];
-        for (int i = 0; i < 8; i++) {
+        String[] etiquetas = new String[5];
+        for (int i = 0; i < 5; i++) {
             etiquetas[i] = sp.format(cal.getTime());
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+            cal.add(Calendar.DAY_OF_MONTH, 2);
         }
-        etiquetas[quantity - 1] = "Hoy";
-
         return etiquetas;
     }
 }

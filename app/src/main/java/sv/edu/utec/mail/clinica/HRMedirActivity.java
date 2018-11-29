@@ -12,14 +12,22 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import sv.edu.utec.mail.clinica.AppControl.Control;
+import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Services.BluetoothLeService;
 
 public class HRMedirActivity extends AppCompatActivity {
@@ -30,9 +38,10 @@ public class HRMedirActivity extends AppCompatActivity {
     private TextView mDataField;
     private Button mMedir;
     private Button mGuardar;
+    private Switch mSwicth;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
-    public static String HEART_RATE_SERVICE="00000af0-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_SERVICE = "00000af0-0000-1000-8000-00805f9b34fb";
     public static String HEART_RATE_MEASUREMENT = "00000af2-0000-1000-8000-00805f9b34fb";
     BluetoothGattCharacteristic CHAR_HEART_RATE;
     private boolean mConnected = false;
@@ -64,11 +73,14 @@ public class HRMedirActivity extends AppCompatActivity {
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 updateConnectionState("Conectado");
-                invalidateOptionsMenu();
+                mSwicth.setChecked(true);
+                mMedir.setEnabled(true);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 updateConnectionState("Desconectado");
-                invalidateOptionsMenu();
+                mSwicth.setChecked(false);
+                mMedir.setEnabled(false);
+                mGuardar.setEnabled(false);
                 clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
@@ -85,9 +97,7 @@ public class HRMedirActivity extends AppCompatActivity {
 
         final Intent intent = getIntent();
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-
-        Log.d(TAG,mDeviceAddress);
-
+        mSwicth = findViewById(R.id.swConectar);
         mDataField = (TextView) findViewById(R.id.txtHRData);
         mMedir = (Button) findViewById(R.id.btnMedir);
         mMedir.setOnClickListener(new View.OnClickListener() {
@@ -121,12 +131,19 @@ public class HRMedirActivity extends AppCompatActivity {
             mNotifyCharacteristic = CHAR_HEART_RATE;
             mBluetoothLeService.setCharacteristicNotification(CHAR_HEART_RATE, true);
         }
+        mGuardar.setEnabled(true);
     }
 
     private void guardar() {
-        if (!mDataField.getText().equals("0")) {
-            Toast.makeText(this, "Esperame...", Toast.LENGTH_LONG).show();
-        }
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("unidad", "bpm");
+        params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
+        params.put("codigo_vitales", "8");
+        params.put("fecha", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime()));
+        params.put("valor", mDataField.getText().toString());
+        ClienteRest.getInstance(this).addToRequestQueue(
+                ClienteRest.subirDatos(this, Request.Method.POST, ClienteRest.getRegistroVitalesUrl()
+                        , "Medición registrada con éxito.", "No se pudo establecer la conexión con el servidor.", params));
     }
 
     private void clearUI() {
@@ -156,35 +173,6 @@ public class HRMedirActivity extends AppCompatActivity {
         mBluetoothLeService = null;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_hr, menu);
-        if (mConnected) {
-            menu.findItem(R.id.menu_connect).setVisible(false);
-            menu.findItem(R.id.menu_disconnect).setVisible(true);
-        } else {
-            menu.findItem(R.id.menu_connect).setVisible(true);
-            menu.findItem(R.id.menu_disconnect).setVisible(false);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_connect:
-                mBluetoothLeService.connect(mDeviceAddress);
-                return true;
-            case R.id.menu_disconnect:
-                mBluetoothLeService.disconnect();
-                return true;
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void updateConnectionState(final String msj) {
         runOnUiThread(new Runnable() {
             @Override
@@ -197,17 +185,18 @@ public class HRMedirActivity extends AppCompatActivity {
     private void displayData(String data) {
         if (data != null) {
             mDataField.setText(data);
+            mGuardar.setEnabled(true);
         }
     }
 
     private void displayGattServices(List<BluetoothGattService> gattServices) {
-        Log.d(TAG,"Sí los registra");
+        Log.d(TAG, "Sí los registra");
         if (gattServices == null) return;
 
         BluetoothGattService mGattService = null;
         for (BluetoothGattService gattService : gattServices) {
             if (gattService.getUuid().toString().equals(HEART_RATE_SERVICE)) {
-                Log.d(TAG,"registró el servicio");
+                Log.d(TAG, "registró el servicio");
                 mGattService = gattService;
                 break;
             }
@@ -215,7 +204,7 @@ public class HRMedirActivity extends AppCompatActivity {
         if (mGattService != null) {
             for (BluetoothGattCharacteristic gattCharacteristic : mGattService.getCharacteristics()) {
                 if (gattCharacteristic.getUuid().toString().equals(HEART_RATE_MEASUREMENT)) {
-                    Log.d(TAG,"registró el la caracteristica");
+                    Log.d(TAG, "registró el la caracteristica");
                     CHAR_HEART_RATE = gattCharacteristic;
                     break;
                 }

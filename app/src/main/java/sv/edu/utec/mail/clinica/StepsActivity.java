@@ -7,9 +7,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -28,10 +31,13 @@ import com.google.android.gms.fitness.result.DataSourcesResult;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fitness.FitClient;
+import sv.edu.utec.mail.clinica.Red.ClienteRest;
 import sv.edu.utec.mail.clinica.Services.StepCounterService;
 import sv.edu.utec.mail.clinica.Utilidades.Graficador;
 
@@ -39,6 +45,7 @@ public class StepsActivity extends FitClient {
 
     TextView mBanner;
     GraphView graph;
+    Button mGuardar;
 
     private OnDataPointListener onDataPointListener;
 
@@ -61,18 +68,24 @@ public class StepsActivity extends FitClient {
         mBanner = findViewById(R.id.txtPasos);
         mBanner.setText("Pasos de hoy: " + Control.usrPasosHoy.valor);
         graph = findViewById(R.id.graphSteps);
+        graph.getViewport().setBackgroundColor(Color.rgb(208, 231, 255));
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(8);
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(10000);
-
-        graph.getViewport().setBackgroundColor(Color.argb(128, 224, 224, 224));
         graph.addSeries(Graficador.lineaMeta());
-        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
-        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.WHITE);
+        graph.getGridLabelRenderer().setHorizontalLabelsColor(Color.rgb(0, 51, 102));
+        graph.getGridLabelRenderer().setVerticalLabelsColor(Color.rgb(0, 51, 102));
         mCount = Control.usrPasosHoy.valor;
+        mGuardar=findViewById(R.id.btnGuardarPasos);
+        mGuardar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                guardar();
+            }
+        });
         buildSensor();
         if (Control.usrPasos != null) {
             StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
@@ -211,4 +224,18 @@ public class StepsActivity extends FitClient {
                     }
                 });
     }
+
+    private void guardar() {
+        mCount = Control.usrPasosHoy.valor;
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("unidad", "Pasos");
+        params.put("codigo_pac", String.valueOf(Control.sysUsr.paciente));
+        params.put("codigo_vitales", "7");
+        params.put("fecha", Control.usrPasosHoy.fecha);
+        params.put("valor", String.valueOf(Control.usrPasosHoy.valor));
+        ClienteRest.getInstance(this).addToRequestQueue(
+        ClienteRest.subirDatos(this, Request.Method.POST, ClienteRest.getRegistroVitalesUrl()
+                , "Pasos registrados con éxito", "No se pudo establecer la conexión con el servidor", params));
+    }
+
 }

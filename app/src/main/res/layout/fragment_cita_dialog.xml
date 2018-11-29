@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="305dp"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
+    android:background="#fafafa"
     tools:context=".Fragments.CitaDialogFragment">
 
     <TextView
@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/txtDlgFecha"
         android:text="Fecha: "
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -24,7 +24,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:text="{fecha}"
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp" />
 
     <TextView
@@ -34,7 +34,7 @@
         android:layout_alignStart="@+id/textView6"
         android:layout_below="@+id/textView6"
         android:text="Médico: "
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -45,7 +45,7 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/textView6"
         android:text="{medico}"
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp" />
 
     <TextView
@@ -55,7 +55,7 @@
         android:layout_alignStart="@+id/textView6"
         android:layout_below="@+id/textView5"
         android:text="Motivo: "
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -68,7 +68,7 @@
         android:lines="3"
         android:maxLines="3"
         android:text="{motivo}"
-        android:textColor="@android:color/black"
+        android:textColor="#003366"
         android:textSize="16sp" />
 
 </RelativeLayout>

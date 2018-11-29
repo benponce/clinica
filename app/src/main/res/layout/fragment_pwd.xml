@@ -1,87 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient"
+    android:padding="25dp"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="#fafafa"
     tools:context=".Fragments.PwdFragment">
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/pwdActual"
-        android:layout_marginBottom="170dp"
-        android:text="Confirme nueva contraseña"
-        android:textColor="@android:color/white"
-        android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/textView3"
-        android:layout_marginBottom="260dp"
-        android:text="Contraseña Nueva"
-        android:textColor="@android:color/white"
-        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/textView3"
-        android:layout_marginBottom="350dp"
         android:text="Contraseña Actual"
-        android:textColor="@android:color/white"
+        android:textColor="#003366"
+        android:padding="10dp"
         android:textSize="18sp" />
 
     <EditText
         android:id="@+id/pwdActual"
-        android:layout_width="250dp"
-        android:layout_height="45dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="290dp"
-        android:background="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/textbox_normal"
         android:ems="10"
+        android:padding="10dp"
+        android:hint="Contraseña Actual"
         android:inputType="textPassword"
-        android:textColor="@android:color/black" />
+        android:textColor="#003366" />
 
-    <EditText
-        android:id="@+id/pwdConfirm"
-        android:layout_width="250dp"
-        android:layout_height="45dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="120dp"
-        android:background="@android:color/white"
-        android:ems="10"
-        android:inputType="textPassword"
-        android:textColor="@android:color/black" />
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contraseña Nueva"
+        android:padding="10dp"
+        android:textColor="#003366"
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/pwdNueva"
-        android:layout_width="250dp"
-        android:layout_height="45dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="200dp"
-        android:background="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/textbox_normal"
         android:ems="10"
+        android:padding="10dp"
+        android:hint="Nueva Contraseña"
         android:inputType="textPassword"
-        android:textColor="@android:color/black" />
+        android:textColor="#003366" />
 
-    <Button
-        android:id="@+id/btnCambiar"
-        android:layout_width="250dp"
-        android:layout_height="50dp"
-        android:background="@android:color/holo_blue_light"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="60dp"
-        android:text="Cambiar Contraseña" />
-</RelativeLayout>
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Confirme su nueva contraseña"
+        android:textColor="#003366"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/pwdConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:padding="10dp"
+        android:background="@drawable/textbox_normal"
+        android:ems="10"
+        android:hint="Confirme su nueva contraseña"
+        android:inputType="textPassword"
+        android:textColor="#003366" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="15dp"
+        android:background="@color/colorAccent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnCambiar"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:background="@drawable/button_shape"
+            android:textColor="@drawable/button_text_color"
+            android:text="Cambiar Contraseña" />
+    </LinearLayout>
+
+</LinearLayout>

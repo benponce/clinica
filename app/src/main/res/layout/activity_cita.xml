@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#fafafa"
-    android:padding="20dp"
+    android:padding="5dp"
     tools:context=".CitaActivity">
 
     <com.applandeo.materialcalendarview.CalendarView
@@ -14,6 +14,15 @@
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        app:abbreviationsBarColor="#d0e7ff"
+        app:abbreviationsLabelsColor="#003366"
+        app:daysLabelsColor="#003366"
         app:eventsEnabled="true"
+        app:headerColor="#0a9de1"
+        app:headerLabelColor="#fafafa"
+        app:pagesColor="#fff"
+        app:selectionColor="#0a9de1"
+        app:selectionLabelColor="#fff"
+        app:todayLabelColor="#800000"
         app:type="one_day_picker" />
 </RelativeLayout>

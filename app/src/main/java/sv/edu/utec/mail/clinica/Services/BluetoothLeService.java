@@ -45,8 +45,8 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
 
     public static String HEART_RATE_SERVICE = "00000af0-0000-1000-8000-00805f9b34fb";
-    public static String HEART_RATE_MEASUREMENT = "00000af2-0000-1000-8000-00805f9b34fb";
-    public static String HEART_RATE_CONTROL = "00000af7-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_MEASUREMENT = "00000af7-0000-1000-8000-00805f9b34fb";
+    public static String HEART_RATE_CONTROL = "00000af6-0000-1000-8000-00805f9b34fb";
     public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -97,7 +97,7 @@ public class BluetoothLeService extends Service {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             BluetoothGattCharacteristic characteristic = gatt.getService(UUID.fromString(HEART_RATE_SERVICE))
                     .getCharacteristic(UUID.fromString(HEART_RATE_CONTROL));
-            characteristic.setValue(new byte[]{1, 1});
+            characteristic.setValue(new byte[]{2, 4});
             gatt.writeCharacteristic(characteristic);
         }
     };
@@ -110,7 +110,6 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-        /*if (HEART_RATE_MEASUREMENT.equals(characteristic.getUuid().toString())) {
             int flag = characteristic.getProperties();
             int format = -1;
             if ((flag & 0x01) != 0) {
@@ -123,16 +122,6 @@ public class BluetoothLeService extends Service {
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.d(TAG, String.format("Received heart rate: %d", heartRate));
             intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
-        } else {*/
-            final byte[] data = characteristic.getValue();
-            if (data != null && data.length > 0) {
-                final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for(byte byteChar : data)
-                    stringBuilder.append(String.format("%02X ", byteChar));
-                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
-                Log.d(TAG, String.format("Datos Reibidos: "+ stringBuilder.toString()));
-            }
-        //}
         sendBroadcast(intent);
     }
 

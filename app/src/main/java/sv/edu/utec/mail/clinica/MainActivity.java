@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,10 +31,11 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mSteps;
     private LinearLayout mConfig;
     public int progreso;
+    private Handler mHandler;
     private String[] PERMISOS = new String[]{
             Manifest.permission.WRITE_CALENDAR,
             Manifest.permission.READ_CALENDAR,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     @Override
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mHandler = new Handler();
         mBanner = findViewById(R.id.txtBanner);
         mLogout = findViewById(R.id.optLogout);
         mLogout.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +117,16 @@ public class MainActivity extends AppCompatActivity {
         };
         Sincro.getInstance(this).downloadPasos(sincroCallback);
         Sincro.getInstance(this).downloadCitas(sincroCallback);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mPrgDescarga.setVisibility(View.INVISIBLE);
+                if(progreso<2){
+                    Toast.makeText(MainActivity.this,
+                            "No ha sido posible descargar tus datos.\n Comprueba tu conexión a internet.",Toast.LENGTH_LONG).show();
+                }
+            }
+        }, 30000);
     }
 
     private void revisarPermisos() {
@@ -138,6 +151,12 @@ public class MainActivity extends AppCompatActivity {
             if (!allGranted) {
                 ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
                 Toast.makeText(this, "Posiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
+                if(ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED){
+                    mCitas.setEnabled(false);
+                }
+                if(ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED){
+                    mHeartRate.setEnabled(false);
+                }
             }
         }
     }

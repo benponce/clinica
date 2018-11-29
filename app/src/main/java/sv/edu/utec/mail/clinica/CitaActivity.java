@@ -67,17 +67,19 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
     }
 
     public void verCita(EventDay eventDay) {
-        //Leer la fecha seleccionada
-        Date fecha = eventDay.getCalendar().getTime();
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        String strFecha = df.format(fecha);
-        //Buscar la cita que corresponde a la fecha, si la hay
-        for (Citas cita : Control.usrCitas) {
-            if (strFecha.equals(cita.fecha)) {
-                mCitaSelected = cita;
-                CitaDialogFragment citaDlg = new CitaDialogFragment();
-                citaDlg.show(getSupportFragmentManager(), "citaDlg");
-                break;
+        if(Control.usrCitas!=null) {
+            //Leer la fecha seleccionada
+            Date fecha = eventDay.getCalendar().getTime();
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+            String strFecha = df.format(fecha);
+            //Buscar la cita que corresponde a la fecha, si la hay
+            for (Citas cita : Control.usrCitas) {
+                if (strFecha.equals(cita.fecha)) {
+                    mCitaSelected = cita;
+                    CitaDialogFragment citaDlg = new CitaDialogFragment();
+                    citaDlg.show(getSupportFragmentManager(), "citaDlg");
+                    break;
+                }
             }
         }
     }

@@ -1,14 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#fafafa"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:weightSum="1"
     tools:context=".HRConActivity">
 
-    <ListView
-        android:id="@+id/listDevices"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="fill_horizontal"
+        android:orientation="horizontal">
+
+        <Switch
+            android:id="@+id/swScan"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:gravity="right"
+            android:text="Buscar dispositivos"
+            android:textColor="#003366"
+            android:textSize="16sp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ProgressBar
+            android:id="@+id/pbScan"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:drawSelectorOnTop="false" />
-</RelativeLayout>
+        android:layout_weight="0.8"
+        android:gravity="fill"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/listDevices"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:drawSelectorOnTop="false" />
+    </LinearLayout>
+</LinearLayout>

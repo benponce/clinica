@@ -43,94 +43,7 @@
         android:layout_height="1dp"
         android:background="@color/colorAccent" />
 
-    <LinearLayout
-        android:id="@+id/optConfig"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_selector"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="horizontal"
-        android:padding="10dp">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:tint="#003366"
-            app:srcCompat="@drawable/ic_action_config" />
-
-        <LinearLayout
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Cuenta"
-                android:textColor="#003366"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Contiene información del usuario y la opción para cambiar la contraseña."
-                android:textColor="#0a9de1"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/colorAccent" />
-
-    <LinearLayout
-        android:id="@+id/optCitas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_selector"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="horizontal"
-        android:padding="10dp">
-
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:tint="#003366"
-            app:srcCompat="@drawable/ic_action_citas" />
-
-        <LinearLayout
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Citas"
-                android:textColor="#003366"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Obtenga información de sus citas médicas programadas."
-                android:textColor="#0a9de1"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/colorAccent" />
-    />
 
     <LinearLayout
         android:id="@+id/optStep"
@@ -223,6 +136,92 @@
     />
 
     <LinearLayout
+        android:id="@+id/optCitas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_selector"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:tint="#003366"
+            app:srcCompat="@drawable/ic_action_citas" />
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Citas"
+                android:textColor="#003366"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Obtenga información de sus citas médicas programadas."
+                android:textColor="#0a9de1"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+    />
+    <LinearLayout
+        android:id="@+id/optConfig"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_selector"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:tint="#003366"
+            app:srcCompat="@drawable/ic_action_config" />
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cuenta"
+                android:textColor="#003366"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Contiene información del usuario y la opción para cambiar la contraseña."
+                android:textColor="#0a9de1"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent" />
+    />
+    <LinearLayout
         android:id="@+id/optLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -265,4 +264,5 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/colorAccent" />
+
 </LinearLayout>

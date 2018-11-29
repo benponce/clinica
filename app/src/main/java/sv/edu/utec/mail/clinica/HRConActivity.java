@@ -14,18 +14,20 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class HRConActivity extends AppCompatActivity {
     private LeDeviceListAdapter mLeDeviceListAdapter;
@@ -33,6 +35,8 @@ public class HRConActivity extends AppCompatActivity {
     private boolean mScanning;
     private Handler mHandler;
     private ListView mLisview;
+    private Switch mSwitch;
+    private ProgressBar mProgress;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private final int PERMISO_LOCATION = 787;
@@ -59,6 +63,17 @@ public class HRConActivity extends AppCompatActivity {
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "El dispositivo no posee soporte BLE.", Toast.LENGTH_SHORT).show();
         }
+        mProgress = findViewById(R.id.pbScan);
+        mSwitch = findViewById(R.id.swScan);
+        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    mLeDeviceListAdapter.clear();
+                }
+                scanLeDevice(isChecked);
+            }
+        });
     }
 
     @Override
@@ -105,22 +120,6 @@ public class HRConActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_escaneo, menu);
-        if (!mScanning) {
-            menu.findItem(R.id.menu_stop).setVisible(false);
-            menu.findItem(R.id.menu_scan).setVisible(true);
-            menu.findItem(R.id.menu_refresh).setActionView(null);
-        } else {
-            menu.findItem(R.id.menu_stop).setVisible(true);
-            menu.findItem(R.id.menu_scan).setVisible(false);
-            menu.findItem(R.id.menu_refresh).setActionView(R.layout.scan_progress);
-        }
-        return true;
-    }
-
-
     protected void listItemClick(int position) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
@@ -133,21 +132,6 @@ public class HRConActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_scan:
-                mLeDeviceListAdapter.clear();
-                scanLeDevice(true);
-                break;
-            case R.id.menu_stop:
-                scanLeDevice(false);
-                break;
-        }
-        return true;
-    }
-
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             mHandler.postDelayed(new Runnable() {
@@ -155,24 +139,19 @@ public class HRConActivity extends AppCompatActivity {
                 public void run() {
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    invalidateOptionsMenu();
+                    mProgress.setVisibility(View.INVISIBLE);
+                    mSwitch.setChecked(false);
                 }
             }, SCAN_PERIOD);
-
+            mSwitch.setChecked(true);
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
+            mProgress.setVisibility(View.VISIBLE);
         } else {
             mScanning = false;
+            mProgress.setVisibility(View.INVISIBLE);
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
-        invalidateOptionsMenu();
-    }
-
-
-    static class ViewHolder {
-        TextView deviceName;
-        TextView deviceAddress;
-        ImageView deviceIcon;
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -231,28 +210,23 @@ public class HRConActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            ViewHolder viewHolder;
+            View vi = view;
             if (view == null) {
-                view = mInflator.inflate(R.layout.listitem_device, null);
-                viewHolder = new ViewHolder();
-                viewHolder.deviceAddress = view.findViewById(R.id.device_address);
-                viewHolder.deviceName = view.findViewById(R.id.device_name);
-                viewHolder.deviceIcon = view.findViewById(R.id.device_icon);
-                view.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) view.getTag();
+                vi = mInflator.inflate(R.layout.listitem_device, null);
             }
+            TextView deviceAddress = vi.findViewById(R.id.device_address);
+            TextView deviceName = vi.findViewById(R.id.device_name);
+            ImageView deviceIcon = vi.findViewById(R.id.device_icon);
 
             BluetoothDevice device = mLeDevices.get(i);
-            final String deviceName = device.getName();
+            final String strDeviceName = device.getName();
             if (deviceName != null && deviceName.length() > 0) {
-                viewHolder.deviceName.setText(deviceName);
+                deviceName.setText(strDeviceName);
             } else {
-                viewHolder.deviceName.setText("Dispositivo desconocido");
+                deviceName.setText("Dispositivo desconocido");
             }
-            viewHolder.deviceAddress.setText(device.getAddress());
-
-            return view;
+            deviceAddress.setText(device.getAddress());
+            return vi;
         }
     }
 }
