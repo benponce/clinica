@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -27,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class HRConActivity extends AppCompatActivity {
     private LeDeviceListAdapter mLeDeviceListAdapter;
@@ -210,23 +208,32 @@ public class HRConActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            View vi = view;
+            ViewHolder viewHolder;
             if (view == null) {
-                vi = mInflator.inflate(R.layout.listitem_device, null);
+                view = mInflator.inflate(R.layout.listitem_device, null);
+                viewHolder = new ViewHolder();
+                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
+                viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
+                view.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) view.getTag();
             }
-            TextView deviceAddress = vi.findViewById(R.id.device_address);
-            TextView deviceName = vi.findViewById(R.id.device_name);
-            ImageView deviceIcon = vi.findViewById(R.id.device_icon);
 
             BluetoothDevice device = mLeDevices.get(i);
-            final String strDeviceName = device.getName();
+            final String deviceName = device.getName();
             if (deviceName != null && deviceName.length() > 0) {
-                deviceName.setText(strDeviceName);
+                viewHolder.deviceName.setText(deviceName);
             } else {
-                deviceName.setText("Dispositivo desconocido");
+                viewHolder.deviceName.setText("");
             }
-            deviceAddress.setText(device.getAddress());
-            return vi;
+            viewHolder.deviceAddress.setText(device.getAddress());
+
+            return view;
         }
+    }
+
+    static class ViewHolder {
+        TextView deviceName;
+        TextView deviceAddress;
     }
 }

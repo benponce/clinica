@@ -1,7 +1,9 @@
 package sv.edu.utec.mail.clinica.Services;
 
 import android.app.job.JobParameters;
+import android.app.job.JobScheduler;
 import android.app.job.JobService;
+import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.android.volley.Request;
@@ -28,6 +30,7 @@ public class StepSyncService extends JobService {
 
     @Override
     public boolean onStartJob(final JobParameters params) {
+        ((JobScheduler) this.getSystemService(Context.JOB_SCHEDULER_SERVICE)).cancelAll();
         String url = ClienteRest.getRegistroVitalesUrl();
         leerConteo();
         if (mUsuario != null && mPasos != null) {
