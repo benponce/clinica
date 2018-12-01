@@ -77,6 +77,8 @@ public class StepCounterService extends Service implements OnDataPointListener,
 
     @Override
     public void onCreate() {
+        SharedPreferences sp = getSharedPreferences("clinica", 0);
+        mCuenta = sp.getInt("PasosHoy", 0);
         mHandler = new Handler();
         mHandler.postDelayed(new Runnable() {
             @Override
