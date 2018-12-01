@@ -30,7 +30,6 @@ public class Control {
     public static Usuario sysUsr;
     public static Lectura[] usrPasos;
     public static Citas[] usrCitas;
-    public static Lectura usrPasosHoy;
 
     public static void RedirectMain(Context context) {
         //Abrir MainActivity
@@ -85,41 +84,6 @@ public class Control {
         }
     }
 
-    public static void iniciarConteo(Context context) {
-        Gson gson = new Gson();
-        SharedPreferences settings = context.getSharedPreferences("clinica", 0);
-        try {
-            usrPasosHoy = gson.fromJson(settings.getString("PasosHoy", ""), Lectura.class);
-            Log.i("CARGA_PASOS", usrPasosHoy.valor + "");
-        } catch (Exception e) {
-            usrPasosHoy = new Lectura();
-            usrPasosHoy.fecha = getFechaActual();
-            usrPasosHoy.valor = 0;
-            Log.d("PasosHoy", e.getMessage());
-        }
-    }
-
-    public static void guardarConteo(Context context) {
-        Gson gson = new Gson();
-        SharedPreferences sp = context.getSharedPreferences("clinica", 0);
-        String programar = sp.getString("SubidaProgramada", "0");
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("PasosHoy", gson.toJson(usrPasosHoy));
-
-        if (!getFechaActual().equals(usrPasosHoy.fecha)) {
-            if (programar.equals("0")) {
-                programarActualizacionPasos(context);
-                editor.putString("SubidaProgramada", "1");
-            }
-        } else {
-            if (!programar.equals("1")) {
-                programarActualizacionPasos(context);
-                editor.putString("SubidaProgramada", "1");
-            }
-        }
-        editor.commit();
-    }
-
     public static long todayMillis() {
         //Colocar a las 0 horas
         Calendar cal = new GregorianCalendar();
@@ -136,27 +100,4 @@ public class Control {
         cal.setTimeInMillis(Control.todayMillis());
         return new SimpleDateFormat("yyyyMMdd").format(cal.getTime());
     }
-
-    public static void programarActualizacionPasos(Context context) {
-        //Colocar a las 0 horas
-        Calendar cal = new GregorianCalendar();
-        long currentMillis = cal.getTimeInMillis();
-        cal.setTimeInMillis(todayMillis());
-
-        cal.add(Calendar.HOUR, 21);//9 pm
-        long ini = Math.max(1000, cal.getTimeInMillis() - currentMillis);
-
-        cal.add(Calendar.HOUR, 9);//6 am
-        long fin = Math.max(1000, cal.getTimeInMillis() - ini);
-
-        JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(context, StepSyncService.class))
-                .setMinimumLatency(ini)
-                .setOverrideDeadline(fin)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setPersisted(true);
-        JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.schedule(builder.build());
-        Log.i("PROGRAMAR_ACT", "Tarea programada");
-    }
-
 }

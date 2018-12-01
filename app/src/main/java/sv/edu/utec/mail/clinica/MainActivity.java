@@ -2,10 +2,12 @@ package sv.edu.utec.mail.clinica;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,33 +17,53 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.Fitness;
+
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Red.Sincro;
 import sv.edu.utec.mail.clinica.Services.StepCounterService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
-    public final int PERMISSION_REQ = 1101;
-    public ProgressBar mPrgDescarga;
     private boolean DESCARGAR = true;
+    //Banner de bienvenida
     private TextView mBanner;
+    public ProgressBar mPrgDescarga;
+    //Menú
     private LinearLayout mLogout;
     private LinearLayout mHeartRate;
     private LinearLayout mCitas;
     private LinearLayout mSteps;
     private LinearLayout mConfig;
+    //
     public int progreso;
     private Handler mHandler;
+    //Manejo de permisos
+    public final int PERMISSION_REQ = 1101;
     private String[] PERMISOS = new String[]{
             Manifest.permission.WRITE_CALENDAR,
             Manifest.permission.READ_CALENDAR,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
+    //Cliente de la API Google
+    private static final int REQUEST_OAUTH = 1;
+    private static final String AUTH_PENDING = "auth_state_pending";
+    private boolean authInProgress = false;
+    private GoogleApiClient mApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState != null) {
+            authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
+        }
 
         mHandler = new Handler();
         mBanner = findViewById(R.id.txtBanner);
@@ -81,8 +103,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mPrgDescarga = findViewById(R.id.pb_dnload);
+        iniciarClienteApi();
         revisarPermisos();
         preparar();
+
     }
 
     private void preparar() {
@@ -93,14 +117,6 @@ public class MainActivity extends AppCompatActivity {
             descargarDatos();
             DESCARGAR = false;
         }
-        Control.iniciarConteo(this);
-        try {
-            Intent intent = new Intent(this, StepCounterService.class);
-            startService(intent);
-        } catch (Exception e) {
-            Log.e("INVOCAR_SERVICIO", e.getMessage());
-        }
-
     }
 
     private void descargarDatos() {
@@ -129,12 +145,29 @@ public class MainActivity extends AppCompatActivity {
         }, 30000);
     }
 
+    private void iniciarClienteApi() {
+        mApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Fitness.HISTORY_API)
+                .addApi(Fitness.SENSORS_API)
+                .addScope(new Scope(Scopes.FITNESS_BODY_READ_WRITE))
+                .addScope(new Scope(Scopes.FITNESS_ACTIVITY_READ_WRITE))
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+    }
+
     private void revisarPermisos() {
         if (ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, PERMISOS[1]) != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(AUTH_PENDING, authInProgress);
     }
 
     @Override
@@ -153,11 +186,28 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Posiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
                 if(ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED){
                     mCitas.setEnabled(false);
+                }else{
+                    mCitas.setEnabled(true);
                 }
                 if(ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED){
                     mHeartRate.setEnabled(false);
+                }else{
+                    mHeartRate.setEnabled(true);
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        authInProgress = false;
+        if (resultCode == RESULT_OK) {
+            if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
+                mApiClient.connect();
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            Log.e("MAIN_ACTIVITY", "RESULT_CANCELED");
         }
     }
 
@@ -166,4 +216,42 @@ public class MainActivity extends AppCompatActivity {
         this.moveTaskToBack(true);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mApiClient.connect();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        try {
+            Intent intent = new Intent(this, StepCounterService.class);
+            intent.setAction(StepCounterService.ACTION_SAVE_COUNTER);
+            startService(intent);
+        } catch (Exception e) {
+            Log.e("INVOCAR_SERVICIO", e.getMessage());
+        }
+        mApiClient.disconnect();
+        mSteps.setEnabled(true);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        mSteps.setEnabled(false);
+        if (!authInProgress) {
+            try {
+                authInProgress = true;
+                connectionResult.startResolutionForResult(MainActivity.this, REQUEST_OAUTH);
+            } catch (IntentSender.SendIntentException e) {
+
+            }
+        } else {
+            Log.e("MAIN_ACTIVITY", "authInProgress");
+        }
+    }
 }

@@ -22,9 +22,9 @@ public class Graficador {
 
     }
 
-    public static LineGraphSeries<DataPoint> llenarSerie(Lectura[] lecturas, final Context context) {
+    public static LineGraphSeries<DataPoint> llenarSerie(Lectura[] lecturas, final Context context, int pasos) {
         DataPoint[] dataPoints = new DataPoint[lecturas.length + 1];
-        dataPoints[lecturas.length] = new DataPoint(lecturas.length, Control.usrPasosHoy.valor);
+        dataPoints[lecturas.length] = new DataPoint(lecturas.length, pasos);
         int i = lecturas.length - 1;
         for (Lectura lectura : lecturas) {
             dataPoints[i] = new DataPoint(i, lectura.valor);
