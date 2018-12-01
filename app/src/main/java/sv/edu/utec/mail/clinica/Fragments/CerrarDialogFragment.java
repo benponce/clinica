@@ -20,7 +20,7 @@ public class CerrarDialogFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         //Generar la alerta
         builder.setTitle("Saliendo de la aplicación...")
-                .setMessage("Al cerrar sesión se borrarán tus datos almacenados en este dispositivo, incluyendo tu conteo de pasos.\n¿Deseas continuar?")
+                .setMessage("Al cerrar sesión, se detendrá y reiniciará tu contador de pasos.\n\n¿Deseas continuar?")
                 .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

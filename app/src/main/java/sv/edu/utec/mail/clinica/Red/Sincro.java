@@ -50,10 +50,10 @@ public class Sincro {
                             SharedPreferences.Editor editor = sp.edit();
                             editor.putString("Pasos", strPasos);
                             editor.commit();
-                            sincroCallback.setVisibility();
+                            sincroCallback.onSincronizado();
 
                         } catch (Exception e) {
-                            sincroCallback.setVisibility();
+                            sincroCallback.onSincronizado();
                             Log.d("Descarga de Pasos", e.getMessage());
                         }
                     }
@@ -88,9 +88,9 @@ public class Sincro {
                                 editor.putString("Citas", strCitas);
                                 editor.commit();
                             }
-                            sincroCallback.setVisibility();
+                            sincroCallback.onSincronizado();
                         } catch (Exception e) {
-                            sincroCallback.setVisibility();
+                            sincroCallback.onSincronizado();
                             Log.d("Descarga de Citas", e.getMessage());
                         }
                     }
@@ -111,7 +111,7 @@ public class Sincro {
     }
 
     public interface SincroCallback {
-        void setVisibility();
+        void onSincronizado();
     }
 
 }

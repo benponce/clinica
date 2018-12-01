@@ -1,6 +1,8 @@
 package sv.edu.utec.mail.clinica;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,16 +20,24 @@ import java.util.List;
 import sv.edu.utec.mail.clinica.AppControl.Control;
 import sv.edu.utec.mail.clinica.Fragments.CitaDialogFragment;
 import sv.edu.utec.mail.clinica.POJO.Citas;
+import sv.edu.utec.mail.clinica.Red.Sincro;
 
 public class CitaActivity extends AppCompatActivity implements CitaDialogFragment.CitaDlgListener {
 
     CalendarView mCalendario;
     Citas mCitaSelected;
+    SwipeRefreshLayout swipeRefreshLayout;
+    Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cita);
+
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+        mHandler = new Handler();
+
         mCalendario = findViewById(R.id.calendarView);
         Calendar min = Calendar.getInstance();
         min.add(Calendar.MONTH, -1);
@@ -42,18 +52,43 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
             }
         });
         if (Control.usrCitas != null) {
-            mCalendario.setEvents(colocarCitas(Control.usrCitas));
+            colocarCitas();
         } else {
             Toast.makeText(this, "No tienes citas programadas.", Toast.LENGTH_LONG).show();
         }
+
+        final Sincro.SincroCallback sincroCallback = new Sincro.SincroCallback() {
+            @Override
+            public void onSincronizado() {
+                if (Control.usrCitas != null) {
+                    colocarCitas();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        };
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Sincro.getInstance(CitaActivity.this).downloadCitas(sincroCallback);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 20000);
+            }
+        });
+
+
     }
 
-    private List<EventDay> colocarCitas(Citas[] citas) {
+    private void colocarCitas() {
         List<EventDay> events = new ArrayList<>();
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        Calendar[] cal = new Calendar[citas.length];
+        Calendar[] cal = new Calendar[Control.usrCitas.length];
         int i = 0;
-        for (Citas cita : citas) {
+        for (Citas cita : Control.usrCitas) {
             try {
                 cal[i] = Calendar.getInstance();
                 cal[i].setTime(df.parse(cita.fecha));
@@ -63,11 +98,11 @@ public class CitaActivity extends AppCompatActivity implements CitaDialogFragmen
             }
             i++;
         }
-        return events;
+        mCalendario.setEvents(events);
     }
 
     public void verCita(EventDay eventDay) {
-        if(Control.usrCitas!=null) {
+        if (Control.usrCitas != null) {
             //Leer la fecha seleccionada
             Date fecha = eventDay.getCalendar().getTime();
             SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");

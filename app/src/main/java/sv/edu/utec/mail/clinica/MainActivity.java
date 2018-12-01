@@ -24,6 +24,7 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.Fitness;
 
 import sv.edu.utec.mail.clinica.AppControl.Control;
+import sv.edu.utec.mail.clinica.Fragments.CerrarDialogFragment;
 import sv.edu.utec.mail.clinica.Red.Sincro;
 import sv.edu.utec.mail.clinica.Services.StepCounterService;
 
@@ -71,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Control.Salir(MainActivity.this);
+                CerrarDialogFragment dlg = new CerrarDialogFragment();
+                dlg.show(getSupportFragmentManager(), "cerrarDlg");
             }
         });
         mHeartRate = findViewById(R.id.optHeartRate);
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
         progreso = 0;
         Sincro.SincroCallback sincroCallback = new Sincro.SincroCallback() {
             @Override
-            public void setVisibility() {
+            public void onSincronizado() {
                 progreso += 1;
                 Log.i("SINCRO", "" + progreso);
                 if (progreso == 2) {
