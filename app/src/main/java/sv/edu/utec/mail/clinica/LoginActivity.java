@@ -31,7 +31,9 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         mUserId = findViewById(R.id.txtUser);
+        mUserId.setText("");
         mPassword = findViewById(R.id.txtPwd);
+        mPassword.setText("");
         mLogin = findViewById(R.id.btnLogin);
 
         mLogin.setOnClickListener(new View.OnClickListener() {
@@ -54,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void ingresar() {
-        String usr = mUserId.getText().toString();
+        String usr = mUserId.getText().toString().trim();
         String pdw = mPassword.getText().toString();
         String url = ClienteRest.getLoginUrl() + usr + '/' + pdw;
 

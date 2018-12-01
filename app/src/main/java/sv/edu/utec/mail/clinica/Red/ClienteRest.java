@@ -2,23 +2,19 @@ package sv.edu.utec.mail.clinica.Red;
 
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import sv.edu.utec.mail.clinica.AppControl.Control;
 
 public class ClienteRest {
 
@@ -32,7 +28,7 @@ public class ClienteRest {
     }
 
     public static String getPasosUrl() {
-        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales_Pasos/";
+        return "https://apex.oracle.com/pls/apex/utec1759102013/CR/Vitales_Pasos/" + Control.getFechaActual() + "/";
     }
 
     public static String getCambioPwd() {

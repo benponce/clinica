@@ -137,9 +137,9 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void run() {
                 mPrgDescarga.setVisibility(View.INVISIBLE);
-                if(progreso<2){
+                if (progreso < 2) {
                     Toast.makeText(MainActivity.this,
-                            "No ha sido posible descargar tus datos.\n Comprueba tu conexión a internet.",Toast.LENGTH_LONG).show();
+                            "No ha sido posible descargar tus datos.\n Comprueba tu conexión a internet.", Toast.LENGTH_LONG).show();
                 }
             }
         }, 30000);
@@ -184,14 +184,14 @@ public class MainActivity extends AppCompatActivity implements
             if (!allGranted) {
                 ActivityCompat.requestPermissions(this, PERMISOS, PERMISSION_REQ);
                 Toast.makeText(this, "Posiblemente no nos concediste los permisos necesarios.", Toast.LENGTH_LONG).show();
-                if(ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(this, PERMISOS[0]) != PackageManager.PERMISSION_GRANTED) {
                     mCitas.setEnabled(false);
-                }else{
+                } else {
                     mCitas.setEnabled(true);
                 }
-                if(ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.checkSelfPermission(this, PERMISOS[2]) != PackageManager.PERMISSION_GRANTED) {
                     mHeartRate.setEnabled(false);
-                }else{
+                } else {
                     mHeartRate.setEnabled(true);
                 }
             }

@@ -75,12 +75,18 @@ public class StepsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = new Intent(this, StepCounterService.class);
+        intent.setAction(StepCounterService.ACTION_REQ_COUNT);
+        startService(intent);
         registerReceiver(mStepReceiver, stepUpdateIntentFilter());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Intent intent = new Intent(this, StepCounterService.class);
+        intent.setAction(StepCounterService.ACTION_SAVE_COUNTER);
+        startService(intent);
         unregisterReceiver(mStepReceiver);
     }
 

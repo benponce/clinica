@@ -45,6 +45,8 @@ public class StepCounterService extends Service implements OnDataPointListener,
     public final static String ACTION_SAVE_COUNTER = "sv.edu.utec.mail.clinica.ACTION_SAVE_COUNTER";
     public final static String ACTION_RESET_COUNTER = "sv.edu.utec.mail.clinica.ACTION_RESET_COUNTER";
     public final static String ACTION_REGISTRAR_ACT = "sv.edu.utec.mail.clinica.ACTION_REGISTRAR_ACT";
+    public final static String ACTION_REQ_COUNT = "sv.edu.utec.mail.clinica.ACTION_REQ_COUNT";
+    public final static String ACTION_CERRAR = "sv.edu.utec.mail.clinica.ACTION_CERRAR";
     public final static String STEP_COUNT = "sv.edu.utec.mail.clinica.STEP_COUNT";
     private final String TAG = "STEP_COUNTER";
     //
@@ -84,9 +86,9 @@ public class StepCounterService extends Service implements OnDataPointListener,
             @Override
             public void run() {
                 programarActualizacion();
-                mHandler.postDelayed(this, 3600000);
+                mHandler.postDelayed(this, 300000);
             }
-        }, 3600000);
+        }, 300000);
         buildClient();
         mClient.connect();
     }
@@ -94,13 +96,24 @@ public class StepCounterService extends Service implements OnDataPointListener,
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (intent != null) {
-            if (intent.getAction().equals(ACTION_SAVE_COUNTER)) {
-                guardar();
-            } else if (intent.getAction().equals(ACTION_RESET_COUNTER)) {
-                mCuenta = 0;
-            } else if (intent.getAction().equals(ACTION_REGISTRAR_ACT)) {
-                mEnviada = true;
+        if (intent != null && intent.getAction() != null) {
+            switch (intent.getAction()) {
+                case ACTION_SAVE_COUNTER:
+                    guardar();
+                    break;
+                case ACTION_RESET_COUNTER:
+                    mCuenta = 0;
+                    break;
+                case ACTION_REGISTRAR_ACT:
+                    mEnviada = true;
+                    break;
+                case ACTION_REQ_COUNT:
+                    broadcastUpdate(0);
+                    break;
+                case ACTION_CERRAR:
+                    mCuenta = 0;
+                    stopSelf();
+                    break;
             }
         } else {
             SharedPreferences sp = getSharedPreferences("clinica", 0);
@@ -135,6 +148,7 @@ public class StepCounterService extends Service implements OnDataPointListener,
     }
 
     private void programarActualizacion() {
+        Log.i(TAG, "Programacion de subida");
         Calendar cal = new GregorianCalendar();
         long currentMillis = cal.getTimeInMillis();
         cal.setTimeInMillis(Control.todayMillis());
@@ -165,6 +179,7 @@ public class StepCounterService extends Service implements OnDataPointListener,
 
     private void broadcastUpdate(final int steps) {
         mCuenta += steps;
+        Log.i(TAG, "Pasos: " + mCuenta);
         final Intent intent = new Intent(ACTION_STEP_COUNT);
         intent.putExtra(STEP_COUNT, steps);
         sendBroadcast(intent);
